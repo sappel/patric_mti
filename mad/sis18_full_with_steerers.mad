@@ -1,0 +1,852 @@
+! Comment:
+! Script calculates horizontal separatrix depending on the horizontal 
+! 	and vertical emittance. 
+! 	Here, all particles start from one angle in the x-px-plane for 
+!	one finite vertical emittance. 
+! 	Thin lens tracking is used. 
+! 	Method is from sis18_full_giuliano_sep3.mad and the one being 
+! 	actually in use. 
+! File is copy of sis18_full_giuliano_co_bump0.mad and inlcudes 
+!	steerers called ...MU1A instead of hsteer... . 
+!
+!                              S I S 18
+!09-05-03 translated from MIRKO format by Andrea Franchi a.franchi@gsi.de
+!11-12-07 translated from MAD-8 format by Stefan Sorge s.sorge@gsi.de
+
+TITLE,"SIS-18-inj:from mirko-file of 29-04-2003 with nonlinear elements";
+
+!------------------------------------------------------------------------
+!                           INTRODUCTION
+!
+! the SIS-18 contains 12 periods. Each period can be divided in 5 sectors:
+!
+!   1. the bending section [equal for all the periods]
+!   2. the first multipoles section [in some periods is the drift DR3, in
+!                                    others it contains thin multipoles]
+!   3. the quad doublet [equal for all the periods]
+!   4. the second multipoles section [it changes at each period]
+!   5. the third quad section [equal for all the periods]
+!
+! The sections 1. 3. 5. are defined at the beginning and are called in
+! each period. The other sections 2. and 4. are defined in each period,
+! but some of their drifts are defined only once since they are equal.
+!
+! IN THE TRANSLATION FROM MIRKO FILE THE FOLLOWING ELEMENTS HAVE BEEN
+! IGNORED: buncher, NORM QUADS kicks before each QUAD, BPMs, kickers,
+! PSE, Bypass. All the slits are considered as drifts.
+!
+! IN THIS FILE QUADS AND DRIFTS  ARE SPLITTED IN SUCH A WAY THEIR
+! LENGHTS ARE ALWAYS LESS THAN 1 m. THIS IS NOT NECESSARY, BUT IT HAS
+! BEEN DONE TO FIT "EXACTLY" THE BETA FUNCTIONS CALCULATED BY MIRKO
+!
+!
+!------------------------------------------------------------------------
+
+! Focusing strengths of the quadrupoles QS1F and QS2D determining the tune
+
+! Focusing strengths of the quadrupoles QS1F, QS2D, and QS3T determining the tune
+
+! slow extraction according to N. Pyka (dublett)
+!k1_qs1f:=0.357893011;
+!k1_qs2d:=-0.335373024;
+!k1_qs3t:= 0.0606702417;
+
+! slow extraction according to M. Kirk from E-Mail from A. Redelbach (dublett)
+k1_qs1f:=0.37611/1.04;
+k1_qs2d:=-0.35690/1.04;
+!k1_qs3t:=0.02989/0.4804;
+k1_qs3t:=0.0;
+
+! fast extraction according to M. Kirk from e-mail from A. Redelbach (dublett)
+!k1_qs1f:=0.36837/1.04;
+!k1_qs2d:=-0.35130/1.04;
+!k1_qs3t:=0.02842/0.4804;
+
+! injection according to M. Kirk from e-mail from A. Redelbach (triplett)
+!k1_qs1f:=0.32229/1.04;
+!k1_qs2d:=-0.51963/1.04;
+!k1_qs3t:=0.29891/0.4804;
+
+! Sextupole strengths: 
+
+! found in this file:
+!k2_S01KS1C=-0.075;
+!k2_S01KS3C=0.0;
+!k2_S03KS1C=-0.075;
+!k2_S03KS3C=0.0;
+!k2_S05KS1C=-0.075;
+!k2_S05KS3C=0.0;
+!k2_S07KS1C=-0.075;
+!k2_S07KS3C=0.0;
+!k2_S09KS1C=-0.075;
+!k2_S09KS3C=0.0;
+!k2_S11KS1C=-0.075;
+!k2_S11KS3C=0.0;
+
+! everything is zero
+k2_S01KS1C=0.0;
+k2_S01KS3C=0.0;
+k2_S03KS1C=0.0;
+k2_S03KS3C=0.0;
+k2_S05KS1C=0.0;
+k2_S05KS3C=0.0;
+k2_S07KS1C=0.0;
+k2_S07KS3C=0.0;
+k2_S09KS1C=0.0;
+k2_S09KS3C=0.0;
+k2_S11KS1C=0.0;
+k2_S11KS3C=0.0;
+
+! Parameters from Niels Pyka
+
+! stiffness
+b_rho=5.96181; ! for Ar18+ at 300 MeV/u, May 21, 2007
+!b_rho=11.8214; ! for U73+ at 500 MeV/u, February 19, 2008
+
+!sextupole strengths only for resonance excitation
+! for Ar18+ at 300 MeV/u, May 21, 2007
+!k2_S05KS1C= 0.22430 / b_rho;
+!k2_S05KS3C= 0.0;
+!k2_S07KS1C=-0.42154 / b_rho;
+!k2_S07KS3C= 0.0;
+!k2_S09KS1C=-0.64584 / b_rho;
+!k2_S09KS3C= 0.0;
+!k2_S11KS1C=-0.22430 / b_rho;
+!k2_S11KS3C= 0.0;
+!k2_S01KS1C= 0.42154 / b_rho;
+!k2_S01KS3C= 0.0;
+!k2_S03KS1C= 0.64584 / b_rho;
+!k2_S03KS3C= 0.0;
+!
+! Modification to rotate separatrix
+!k2_S05KS1C= 0.12430 / b_rho;
+!k2_S05KS3C= 0.0;
+!k2_S07KS1C=-0.52154 / b_rho;
+!k2_S07KS3C= 0.0;
+!k2_S09KS1C=-0.64584 / b_rho;
+!k2_S09KS3C= 0.0;
+!k2_S11KS1C=-0.12430 / b_rho;
+!k2_S11KS3C= 0.0;
+!k2_S01KS1C= 0.52154 / b_rho;
+!k2_S01KS3C= 0.0;
+!k2_S03KS1C= 0.64584 / b_rho;
+!k2_S03KS3C= 0.0;
+
+!sextupole strengths only for chromaticity correction
+! for Ar18+ at 300 MeV/u, May 21, 2007
+!k2_S05KS1C= 1.22813 / b_rho;
+!k2_S05KS3C=-2.24164 / b_rho;
+!k2_S07KS1C= 1.22813 / b_rho;
+!k2_S07KS3C=-2.24164 / b_rho;
+!k2_S09KS1C= 1.22813 / b_rho;
+!k2_S09KS3C=-2.24164 / b_rho;
+!k2_S11KS1C= 1.22813 / b_rho;
+!k2_S11KS3C=-2.24164 / b_rho;
+!k2_S01KS1C= 1.22813 / b_rho;
+!k2_S01KS3C=-2.24164 / b_rho;
+!k2_S03KS1C= 1.22813 / b_rho;
+!k2_S03KS3C=-2.24164 / b_rho;
+
+!sextupole strengths for resonance excitation and chromaticity correction
+! for Ar18+ at 300 MeV/u, May 21, 2007
+!!k2_S05KS1C=  1.45243 / b_rho;
+!!k2_S05KS3C= -2.24164 / b_rho;
+!!k2_S07KS1C=  0.80659 / b_rho;
+!!k2_S07KS3C= -2.24164 / b_rho;
+!!k2_S09KS1C=  0.58230 / b_rho;
+!!k2_S09KS3C= -2.24164 / b_rho;
+!!k2_S11KS1C=  1.00384 / b_rho;
+!!k2_S11KS3C= -2.24164 / b_rho;
+!!k2_S01KS1C=  1.64967 / b_rho;
+!!k2_S01KS3C= -2.24164 / b_rho;
+!!k2_S03KS1C=  1.87397 / b_rho;
+!!k2_S03KS3C= -2.24164 / b_rho;
+!
+! for U73+ at 500 MeV/u, February 19, 2008
+!
+! set 1
+!k2_S05KS1C= 2.7411 / b_rho;
+!k2_S05KS3C=-4.4448 / b_rho;
+!k2_S07KS1C= 1.5993 / b_rho;
+!k2_S07KS3C=-4.4448 / b_rho;
+!k2_S09KS1C= 1.2933 / b_rho;
+!k2_S09KS3C=-4.4448 / b_rho;
+!k2_S11KS1C= 2.1292 / b_rho;
+!k2_S11KS3C=-4.4448 / b_rho;
+!k2_S01KS1C= 3.2711 / b_rho;
+!k2_S01KS3C=-4.4448 / b_rho;
+!k2_S03KS1C= 3.5770 / b_rho;
+!k2_S03KS3C=-4.4448 / b_rho;
+!
+! set 2
+!k2_S05KS1C= 2.8800 / b_rho;
+!k2_S05KS3C=-4.4448 / b_rho;
+!k2_S07KS1C= 1.5990 / b_rho;
+!k2_S07KS3C=-4.4448 / b_rho;
+!k2_S09KS1C= 1.1550 / b_rho;
+!k2_S09KS3C=-4.4448 / b_rho;
+!k2_S11KS1C= 1.9900 / b_rho;
+!k2_S11KS3C=-4.4448 / b_rho;
+!k2_S01KS1C= 3.2710 / b_rho;
+!k2_S01KS3C=-4.4448 / b_rho;
+!k2_S03KS1C= 3.7160 / b_rho;
+!k2_S03KS3C=-4.4448 / b_rho;
+!
+! set 3
+!k2_S05KS1C= 3.0347 / b_rho;
+!k2_S05KS3C=-4.4448 / b_rho;
+!k2_S07KS1C= 1.6215 / b_rho;
+!k2_S07KS3C=-4.4448 / b_rho;
+!k2_S09KS1C= 1.0220 / b_rho;
+!k2_S09KS3C=-4.4448 / b_rho;
+!k2_S11KS1C= 1.8357 / b_rho;
+!k2_S11KS3C=-4.4448 / b_rho;
+!k2_S01KS1C= 3.2488 / b_rho;
+!k2_S01KS3C=-4.4448 / b_rho;
+!k2_S03KS1C= 3.8483 / b_rho;
+!k2_S03KS3C=-4.4448 / b_rho;
+!
+! set 4
+!k2_S05KS1C= 3.0597 / b_rho;
+!k2_S05KS3C=-4.4448 / b_rho;
+!k2_S07KS1C= 1.5876 / b_rho;
+!k2_S07KS3C=-4.4448 / b_rho;
+!k2_S09KS1C= 0.9632 / b_rho;
+!k2_S09KS3C=-4.4448 / b_rho;
+!k2_S11KS1C= 1.8107 / b_rho;
+!k2_S11KS3C=-4.4448 / b_rho;
+!k2_S01KS1C= 3.2827 / b_rho;
+!k2_S01KS3C=-4.4448 / b_rho;
+!k2_S03KS1C= 3.9072 / b_rho;
+!k2_S03KS3C=-4.4448 / b_rho;
+!
+! set 5
+!k2_S05KS1C= 3.2036 / b_rho;
+!k2_S05KS3C=-4.4448 / b_rho;
+!k2_S07KS1C= 1.6668 / b_rho;
+!k2_S07KS3C=-4.4448 / b_rho;
+!k2_S09KS1C= 0.8984 / b_rho;
+!k2_S09KS3C=-4.4448 / b_rho;
+!k2_S11KS1C= 1.6668 / b_rho;
+!k2_S11KS3C=-4.4448 / b_rho;
+!k2_S01KS1C= 3.2036 / b_rho;
+!k2_S01KS3C=-4.4448 / b_rho;
+!k2_S03KS1C= 3.9720 / b_rho;
+!k2_S03KS3C=-4.4448 / b_rho;
+
+
+
+
+
+                 !--------------------------!
+                 !  1. the bending block    !
+                 !--------------------------!
+
+DRB1: DRIFT, L=0.6450000;
+DRB2: DRIFT, L=0.9700000;
+ALPHA := 15 * RADDEG;
+LL    := 150 * RADDEG;
+PFR   := 7.3 * RADDEG;
+FI    := 0.7;
+RB: SBEND,L= LL,ANGLE= ALPHA,E1= PFR,E2=PFR,HGAP=0.035,FINT=FI;
+RB0: SBEND,L= LL,ANGLE= ALPHA;
+RB0_HALF: SBEND,L= LL/2.0,ANGLE= ALPHA/2.0;
+rb_dipedge: dipedge, e1=pfr, hgap=0.035,fint=fi;
+RB1: SBEND,L= LL/2.0,ANGLE= ALPHA/2.0,E1= PFR,E2=0.0,HGAP=0.035,FINT=FI/2.0;
+RB2: SBEND,L= LL/2.0,ANGLE= ALPHA/2.0,E1= 0.0,E2=PFR,HGAP=0.035,FINT=FI/2.0;
+
+! steerers according mirko file ZEUS_21_22.MIX from D. Pfeiffer in 
+!  /u/ssorge/dsynchrotrons/dlattices/dsis18/ddorotheapfeiffer_20080820
+cokick:=0.0;
+cokick01:=0.0;
+cokick02:=0.0;
+cokick03:=0.0;
+cokick04:=0.0;
+cokick05:=0.0;
+cokick06:=0.0;
+cokick07:=0.0;
+cokick08:=0.0;
+cokick09:=0.0;
+cokick10:=0.0;
+cokick11:=0.0;
+cokick12:=0.0;
+
+cokick_S04MU1A:=0.0;
+cokick_S05MU2A:=0.0;
+cokick_S06MU1A:=0.0;
+cokick_S07MU2A:=0.0;
+
+S01MU1A: hkicker, kick:=cokick01;
+S01MU2A: hkicker, kick:=cokick;
+S02MU1A: hkicker, kick:=cokick02;
+S02MU2A: hkicker, kick:=cokick;
+S03MU1A: hkicker, kick:=cokick03;
+S03MU2A: hkicker, kick:=cokick;
+S04MU1A: hkicker, kick:=cokick_S04MU1A;        ! for bump at ES septum
+S04MU2A: hkicker, kick:=cokick04;
+S05MU1A: hkicker, kick:=cokick05;
+S05MU2A: hkicker, kick:=cokick_S05MU2A;        ! for bump at ES septum
+S06MU1A: hkicker, kick:=cokick_S06MU1A;        ! for bump at mgn septum
+S06MU2A: hkicker, kick:=cokick06;
+S07MU1A: hkicker, kick:=cokick07;
+S07MU2A: hkicker, kick:=cokick_S07MU2A;        ! for bump at mgn septum
+S08MU1A: hkicker, kick:=cokick08;
+S08MU2A: hkicker, kick:=cokick;
+S09MU1A: hkicker, kick:=cokick09;
+S09MU2A: hkicker, kick:=cokick;
+S10MU1A: hkicker, kick:=cokick10;
+S10MU2A: hkicker, kick:=cokick;
+S11MU1A: hkicker, kick:=cokick11;
+S11MU2A: hkicker, kick:=cokick;
+S12MU1A: hkicker, kick:=cokick12;
+S12MU2A: hkicker, kick:=cokick;
+
+!BENDSECT: LINE=(DRB1,RB,DRB2,RB);
+BENDSECT: LINE=(DRB1,RB1,RB2,DRB2,RB1,RB2);
+
+/*
+BENDSECT01: LINE=(DRB1,RB1,S01MU1A,RB2,DRB2,RB1,S01MU2A,RB2);
+BENDSECT02: LINE=(DRB1,RB1,S02MU1A,RB2,DRB2,RB1,S02MU2A,RB2);
+BENDSECT03: LINE=(DRB1,RB1,S03MU1A,RB2,DRB2,RB1,S03MU2A,RB2);
+BENDSECT04: LINE=(DRB1,RB1,S04MU1A,RB2,DRB2,RB1,S04MU2A,RB2);
+BENDSECT05: LINE=(DRB1,RB1,S05MU1A,RB2,DRB2,RB1,S05MU2A,RB2);
+BENDSECT06: LINE=(DRB1,RB1,S06MU1A,RB2,DRB2,RB1,S06MU2A,RB2);
+BENDSECT07: LINE=(DRB1,RB1,S07MU1A,RB2,DRB2,RB1,S07MU2A,RB2);
+BENDSECT08: LINE=(DRB1,RB1,S08MU1A,RB2,DRB2,RB1,S08MU2A,RB2);
+BENDSECT09: LINE=(DRB1,RB1,S09MU1A,RB2,DRB2,RB1,S09MU2A,RB2);
+BENDSECT10: LINE=(DRB1,RB1,S10MU1A,RB2,DRB2,RB1,S10MU2A,RB2);
+BENDSECT11: LINE=(DRB1,RB1,S11MU1A,RB2,DRB2,RB1,S11MU2A,RB2);
+BENDSECT12: LINE=(DRB1,RB1,S12MU1A,RB2,DRB2,RB1,S12MU2A,RB2);
+*/
+! /*
+! With dipedge elements for thin lattice.
+BENDSECT01: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S01MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S01MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT02: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S02MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S02MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT03: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S03MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S03MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT04: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S04MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S04MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT05: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S05MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S05MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT06: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S06MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S06MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT07: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S07MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S07MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT08: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S08MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S08MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT09: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S09MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S09MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT10: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S10MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S10MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT11: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S11MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S11MU2A,RB0_HALF,RB_DIPEDGE);
+BENDSECT12: LINE=(DRB1,RB_DIPEDGE,RB0_HALF,S12MU1A,RB0_HALF,RB_DIPEDGE,DRB2,RB_DIPEDGE,RB0_HALF,S12MU2A,RB0_HALF,RB_DIPEDGE);
+! */
+! Monitors according to mirko file ZEUS_21_22.MIX from D. Pfeiffer in 
+!  /u/ssorge/dsynchrotrons/dlattices/dsis18/ddorotheapfeiffer_20080820
+S01DX5H: hmonitor;
+S01DX5V: vmonitor;
+S02DX5H: hmonitor;
+S02DX5V: vmonitor;
+S03DX5H: hmonitor;
+S03DX5V: vmonitor;
+S04DX5H: hmonitor;
+S04DX5V: vmonitor;
+S05DX5H: hmonitor;
+S05DX5V: vmonitor;
+S06DX5H: hmonitor;
+S06DX5V: vmonitor;
+S07DX5H: hmonitor;
+S07DX5V: vmonitor;
+S08DX5H: hmonitor;
+S08DX5V: vmonitor;
+S09DX5H: hmonitor;
+S09DX5V: vmonitor;
+S10DX5H: hmonitor;
+S10DX5V: vmonitor;
+S11DX5H: hmonitor;
+S11DX5V: vmonitor;
+S12DX5H: hmonitor;
+S12DX5V: vmonitor;
+
+
+                 !--------------------------!
+                 !   3. the quad doublet    !
+                 !--------------------------!
+
+DR4: DRIFT, L=0.6000000;
+!QS1F: QUADRUPOLE, L=1.0400000 / 2, K1= 0.30989596;
+!QS2D: QUADRUPOLE, L=1.0400000 / 2, K1=-0.49964116;
+!QS1F: QUADRUPOLE, L=1.0400000 / 2, K1= 0.357893011;
+!QS2D: QUADRUPOLE, L=1.0400000 / 2, K1=-0.335373024;
+QS1F: QUADRUPOLE, L=1.0400000 / 2, K1:= k1_qs1f;
+QS2D: QUADRUPOLE, L=1.0400000 / 2, K1:= k1_qs2d;
+
+DOUBLETSECT: line=(QS1F,QS1F,DR4,QS2D,QS2D);
+
+
+
+               !--------------------------!
+               !   5. the last quad      !
+               !--------------------------!
+
+
+DR6: DRIFT, L=0.4998000;
+!QS3T: QUADRUPOLE, L= 0.4804000, K1= 0.62221964;
+!QS3T: QUADRUPOLE, L= 0.4804000, K1= 0.0606702417;
+QS3T: QUADRUPOLE, L= 0.4804000, K1= k1_qs3t;
+
+LASTQUAD: line=(QS3T,DR6);
+
+
+                 !**************************!
+                 !      FIRST PERIOD        !
+                 !**************************!
+
+!  first multipoles section
+
+DR1P1M1: DRIFT, L=4.5640117 / 5;
+DR1P1M2: DRIFT, L=1.9400000 / 2;
+DR1P1M3: DRIFT, L=0.3350000;
+S01KM3QS: multipole, ksl={0.0,0.0}; 
+S01KS1C: multipole, knl={0.0,0.0,k2_S01KS1C};
+!S01KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+!S01KS1C : MULTIPOLE,K2L=-0.0750000;
+
+MULT1SECT1: LINE=(DR1P1M1,DR1P1M1,DR1P1M1,DR1P1M1,DR1P1M1,S01KM3QS,DR1P1M2,DR1P1M2,S01KS1C,DR1P1M3);
+
+!   second multipoles section
+
+DR1P2M1: DRIFT, L=0.3550000;
+DR1P2M2: DRIFT, L=0.3548000;
+S01KS3C: multipole, knl={0.0,0.0,k2_S01KS3C}; 
+!S01KS3C: MULTIPOLE,K2L= 0.0000000;
+ 
+MULT2SECT1: LINE=(DR1P2M1,S01KS3C,DR1P2M2);
+
+
+                 ! definition first period  !
+ 
+PERIOD1: LINE=(BENDSECT01,MULT1SECT1,DOUBLETSECT,MULT2SECT1,LASTQUAD,S01DX5H,S01DX5V);
+
+
+
+                 !**************************!
+                 !     SECOND PERIOD        !
+                 !**************************!
+
+!   first multipoles section
+
+DR3: DRIFT,  L=6.8390117 / 7;
+
+MULT1SECT2: LINE=(DR3,DR3,DR3,DR3,DR3,DR3,DR3);
+
+!   second multipoles section
+
+S02KQ4:   MULTIPOLE,KNL={0.0,0.0};
+S02KM3QS: multipole, ksl={0.0,0.0}; 
+S02KM5SS: multipole, knl={0.0,0.0,0.0}; 
+!S02KQ4:   MULTIPOLE,K1L= 0.0000000;
+!S02KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+!S02KM5SS: MULTIPOLE,K2L= 0.0000000,T2;
+
+MULT2SECT2: LINE=(DR1P2M1,S02KQ4,S02KM3QS,S02KM5SS,DR1P2M2);
+
+                 ! definition second period  !
+
+PERIOD2: LINE=(BENDSECT02,MULT1SECT2,DOUBLETSECT,MULT2SECT2,LASTQUAD,S02DX5H,S02DX5V);
+
+
+
+                 !**************************!
+                 !      THIRD PERIOD        !
+                 !**************************!
+
+!   first multipoles section
+
+DR3P1M1: DRIFT,  L=6.5040117 / 7;
+DR3P1M2: DRIFT,  L=0.3350000;
+S03KS1C: multipole, knl={0.0,0.0,k2_S03KS1C}; 
+!S03KS1C: MULTIPOLE,K2L=-0.0750000;
+
+MULT1SECT3: LINE=(DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,S03KS1C,DR3P1M2);
+
+!   second multipoles section
+
+S03KS3C: multipole, knl={0.0,0.0,k2_S03KS3C}; 
+!S03KS3C: MULTIPOLE,K2L= 0.0000000;
+
+MULT2SECT3: LINE=(DR1P2M1,S03KS3C,DR1P2M2);
+
+                 ! definition third period  !
+
+PERIOD3: LINE=(BENDSECT03,MULT1SECT3,DOUBLETSECT,MULT2SECT3,LASTQUAD,S03DX5H,S03DX5V);
+
+
+
+                 !**************************!
+                 !      FOURTH PERIOD       !
+                 !**************************!
+
+!   first multipoles section
+! split this section to insert septum drifts and to bring it to the start
+
+last_drift: DRIFT, L=0.8350067;
+S04ME1EE1: marker, apertype=rectangle, aperture={0.055,1.0};
+S04ME1EE: DRIFT, L=0.75;
+S04ME1E: MULTIPOLE, knl={0.0}; 
+S04ME1EE2: marker, apertype=rectangle, aperture={0.0685,1.0};
+dr4p1m1: DRIFT, L=0.335;
+dr0.09 : DRIFT, L=0.09;
+dr0.49 : DRIFT, L=0.49;
+dr0.658: DRIFT, L=0.658;
+S04_tfx: multipole, knl={0.0}; 
+S04_tfy: multipole, ksl={0.0}; 
+
+!MULT1SECT4: LINE=(DR3,DR3,DR3,DR3,DR3,DR3,DR3);
+MULT1SECT4: LINE=(DR3,DR3,DR3,last_drift);
+MULT3SECT4: LINE=(dr0.658,s04_tfx,dr0.49,s04_tfy,dr0.09,dr4p1m1);
+
+!   second multipoles section
+
+S04KQ4:   MULTIPOLE,KNL= {0.0,0.0};
+S04KM3QS: multipole, ksl={0.0,0.0}; 
+!S04KQ4:   MULTIPOLE,K1L= 0.0000000;
+!S04KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+
+MULT2SECT4: LINE=(DR1P2M1,S04KQ4,S04KM3QS,DR1P2M2);
+
+                 ! definition fourth period !
+
+PERIOD4: LINE=(BENDSECT04,MULT1SECT4);
+SEPTUM_PERIOD: LINE=(S04ME1EE1,S04ME1EE,S04ME1E,S04ME1EE,S04ME1EE2,
+	MULT3SECT4,DOUBLETSECT,MULT2SECT4,LASTQUAD,S04DX5H,S04DX5V);
+
+
+
+                 !**************************!
+                 !       FIFTH PERIOD       !
+                 !**************************!
+
+!   first multipoles section
+
+S05KS1C: multipole, knl={0.0,0.0,k2_S05KS1C}; 
+!S05KS1C: MULTIPOLE,K2L=-0.0750000;
+
+MULT1SECT5: LINE=(DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,S05KS1C,DR3P1M2);
+
+!   second multipoles section
+
+S05KS3C: multipole, knl={0.0,0.0,k2_S05KS3C}; 
+!S05KS3C: MULTIPOLE,K2L= 0.0000000;
+ 
+MULT2SECT5: LINE=(DR1P2M1,S05KS3C,DR1P2M2);
+
+                 ! definition fifth period  !
+
+PERIOD5: LINE=(BENDSECT05,MULT1SECT5,DOUBLETSECT,MULT2SECT5,LASTQUAD,S05DX5H,S05DX5V);
+
+
+
+                 !**************************!
+                 !       SIXTH PERIOD       !
+                 !**************************!
+
+!   first multipoles section
+
+MULT1SECT6: LINE=(DR3,DR3,DR3,DR3,DR3,DR3,DR3);
+
+dr0.7227: drift, l=0.7227;
+s06mu3e1: marker, apertype=rectangle, aperture={0.05,1.0};
+s06mu3e: drift, l=0.911;
+s06mu3e2: marker, apertype=rectangle, aperture={0.057288,1.0};;
+s06mu4: drift, l= 1.1680782;
+bypass1: marker;
+bypass: drift, l=1.5930086;
+bypass2: marker;
+dr_2.4442249: drift, l=2.4442249;
+
+MULT1SECT6: LINE=(dr0.7227,s06mu3e1,s06mu3e,s06mu3e2,s06mu4,bypass1,bypass,bypass2,dr_2.4442249);
+
+!   second multipoles section
+
+S06KM3QS: multipole, ksl={0.0,0.0}; 
+!S06KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+ 
+MULT2SECT6: LINE=(DR1P2M1,S06KM3QS,DR1P2M2);
+
+                 ! definition sixth period  !
+
+PERIOD6: LINE=(BENDSECT06,MULT1SECT6,DOUBLETSECT,MULT2SECT6,LASTQUAD,S06DX5H,S06DX5V);
+
+
+
+                 !**************************!
+                 !      SEVENTH PERIOD      !
+                 !**************************!
+
+!   first multipoles section
+
+/*
+DR7P1M1: DRIFT,  L=5.2640117 / 6;
+DR7P1M2: DRIFT,  L=1.2400117 / 2;
+DR7P1M3: DRIFT,  L=0.3350000;
+S07KM3QS: multipole, ksl={0.0,0.0}; 
+S07KS1C: multipole, knl={0.0,0.0,k2_S07KS1C}; 
+!S07KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+!S07KS1C : MULTIPOLE,K2L=-0.0750000;
+
+ MULT1SECT7: LINE=(DR7P1M1,DR7P1M1,DR7P1M1,DR7P1M1,DR7P1M1,DR7P1M1,S07KM3QS,DR7P1M2,DR7P1M2,S07KS1C,DR7P1M3);
+*/
+
+! /*
+! with ko_kicker:
+
+DR7P1M1: DRIFT,  L=5.2640117 / 6;
+dr7p1m1a: drift, l=5.2640117*0.706678691 / 6; 
+dr7p1m1b: drift, l=5.2640117*(1.0-0.706678691) / 6; 
+DR7P1M2: DRIFT,  L=1.2400117 / 2;
+DR7P1M3: DRIFT,  L=0.3350000;
+dpxt:=0.0;
+dpyt:=0.0;
+xapert:=1.0e-3;
+yapert:=1.0e-3;
+ko_kicker: kicker, hkick:=dpxt, vkick:=dpyt; !,apertype=rectangle,aperture:={xapert,yapert};
+S07KM3QS: multipole, ksl={0.0,0.0}; 
+S07KS1C: multipole, knl={0.0,0.0,k2_S07KS1C}; 
+!S07KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+!S07KS1C : MULTIPOLE,K2L=-0.0750000;
+
+ MULT1SECT7: LINE=(DR7P1M1,DR7P1M1,DR7P1M1,DR7P1M1A,ko_kicker,DR7P1M1B,DR7P1M1,DR7P1M1,S07KM3QS,DR7P1M2,DR7P1M2,S07KS1C,DR7P1M3);
+! */
+!   second multipoles section
+
+S07KS3C: multipole, knl={0.0,0.0,k2_S07KS3C}; 
+!S07KS3C: MULTIPOLE,K2L= 0.0000000;
+
+MULT2SECT7: LINE=(DR1P2M1,S07KS3C,DR1P2M2);
+
+                 ! definition seventh period  !
+
+PERIOD7: LINE=(BENDSECT07,MULT1SECT7,DOUBLETSECT,MULT2SECT7,LASTQUAD,S07DX5H,S07DX5V);
+
+
+
+                 !**************************!
+                 !       EIGHTH PERIOD      !
+                 !**************************!
+
+!   first multipoles section
+
+MULT1SECT8: LINE=(DR3,DR3,DR3,DR3,DR3,DR3,DR3);
+
+!   second multipoles section
+
+S08KQ4:   MULTIPOLE,KNL= {0.0,0.0};
+S08KM3QS: multipole, ksl={0.0,0.0}; 
+S08KM5SS: multipole, knl={0.0,0.0,0.0}; 
+!S08KQ4:   MULTIPOLE,K1L= 0.0000000;
+!S08KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+!S08KM5SS: MULTIPOLE,K2L= 0.0000000,T2;
+
+MULT2SECT8: LINE=(DR1P2M1,S08KQ4,S08KM3QS,S08KM5SS,DR1P2M2);
+
+                 ! definition eighth period  !
+
+PERIOD8: LINE=(BENDSECT08,MULT1SECT8,DOUBLETSECT,MULT2SECT8,LASTQUAD,S08DX5H,S08DX5V);
+
+
+
+                 !**************************!
+                 !        NINTH PERIOD      !
+                 !**************************!
+
+!   first multipoles section
+
+S09KS1C: multipole, knl={0.0,0.0,k2_S09KS1C}; 
+!S09KS1C: MULTIPOLE,K2L=-0.0750000;
+
+MULT1SECT9: LINE=(DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,S09KS1C,DR3P1M2);
+
+!   second multipoles section
+
+S09KS3C: multipole, knl={0.0,0.0,k2_S09KS3C}; 
+!S09KS3C: MULTIPOLE,K2L= 0.0000000;
+
+MULT2SECT9: LINE=(DR1P2M1,S09KS3C,DR1P2M2);
+
+                 ! definition ninth period  !
+
+PERIOD9: LINE=(BENDSECT09,MULT1SECT9,DOUBLETSECT,MULT2SECT9,LASTQUAD,S09DX5H,S09DX5V);
+
+
+
+                 !**************************!
+                 !        TENTH PERIOD      !
+                 !**************************!
+
+!   first multipoles section
+
+MULT1SECT10: LINE=(DR3,DR3,DR3,DR3,DR3,DR3,DR3);
+
+!   second multipoles section
+
+S10KQ4:   MULTIPOLE,KNL= {0.0,0.0};
+S10KM3QS: multipole, ksl={0.0,0.0}; 
+!S10KQ4:   MULTIPOLE,K1L= 0.0000000;
+!S10KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+
+MULT2SECT10: LINE=(DR1P2M1,S10KQ4,S10KM3QS,DR1P2M2);
+
+                 ! definition tenth period  !
+
+PERIOD10: LINE=(BENDSECT10,MULT1SECT10,DOUBLETSECT,MULT2SECT10,LASTQUAD,S10DX5H,S10DX5V);
+
+
+
+                 !**************************!
+                 !      ELEVENTH PERIOD     !
+                 !**************************!
+
+!   first multipoles section
+
+S11KS1C: multipole, knl={0.0,0.0,k2_S11KS1C}; 
+!S11KS1C: MULTIPOLE,K2L=-0.0750000;
+
+MULT1SECT11: LINE=(DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,DR3P1M1,S11KS1C,DR3P1M2);
+
+!   second multipoles section
+
+S11KS3C: multipole, knl={0.0,0.0,k2_S11KS3C}; 
+!S11KS3C: MULTIPOLE,K2L= 0.0000000;
+
+MULT2SECT11: LINE=(DR1P2M1,S11KS3C,DR1P2M2);
+
+                ! definition eleventh period !
+
+PERIOD11: LINE=(BENDSECT11,MULT1SECT11,DOUBLETSECT,MULT2SECT11,LASTQUAD,S11DX5H,S11DX5V);
+
+
+
+                 !**************************!
+                 !       TWELVTH PERIOD     !
+                 !**************************!
+
+!   first multipoles section
+
+MULT1SECT12: LINE=(DR3,DR3,DR3,DR3,DR3,DR3,DR3);
+
+!   second multipoles section
+
+S12KM3QS: multipole, ksl={0.0,0.0}; 
+!S12KM3QS: MULTIPOLE,K1L= 0.0000000,T1;
+
+MULT2SECT12: LINE=(DR1P2M1,S12KM3QS,DR1P2M2);
+
+                ! definition twelvth period !
+
+PERIOD12: LINE=(BENDSECT12,MULT1SECT12,DOUBLETSECT,MULT2SECT12,LASTQUAD,S12DX5H,S12DX5V);
+
+
+!*************************************************************************
+!*************************************************************************
+
+          !********************************************!
+          !     SIS-18-INJECTION NONLINEAR LATTICE     !
+          !********************************************!
+
+!SIS18LATTICE: LINE=(PERIOD1, PERIOD2, PERIOD3, PERIOD4, SEPTUM_PERIOD, 
+!	PERIOD5,PERIOD6,PERIOD7,PERIOD8,PERIOD9,PERIOD10,PERIOD11,PERIOD12);
+!
+SIS18LATTICE: LINE=(SEPTUM_PERIOD,PERIOD5,PERIOD6,PERIOD7,PERIOD8,PERIOD9,
+	PERIOD10,PERIOD11,PERIOD12,PERIOD1, PERIOD2, PERIOD3, PERIOD4);
+
+beam;
+
+! /*
+USE, sequence=sis18lattice;
+
+select,flag=makethin,sequence=sis18lattice,slice=1;
+makethin, sequence=sis18lattice;
+! */
+
+USE, sequence=sis18lattice;
+
+match,SEQUENCE=sis18lattice;
+!VARY,NAME=qs1f->k1,STEP=0.00001;!,LOWER=_0.4, UPPER=_0.10; 
+!VARY,NAME=qs2d->k1,STEP=0.00001;!,LOWER= 0.20, UPPER= 0.4; 
+VARY,NAME=k1_qs1f,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=k1_qs2d,STEP=0.001;!,LOWER= 0.20, UPPER= 0.4; 
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=#E,MUX=nux,MUY=nuy;
+LMDIF,calls=20000,tolerance=1.e-8;
+endmatch;
+
+select, flag=twiss, clear;
+!select, flag=twiss, column=name,keyword,s,mux,muy;
+select, flag=twiss, column=name,keyword,s,betx,alfx,mux,dx,k1l;
+!select, flag=twiss, column=name,keyword,s,betx,bety;
+!select, flag=twiss, column=name,keyword,s,l,mux;
+!select, flag=twiss, column=s,betx,alfx,mux,dx,bety,alfy,muy;
+!select, flag=twiss, column=s,betx,alfx,mux,dx,x,px,bety,alfy,muy,y;
+twiss, table=twiss, file=sis18_full_lattice_thin1.twiss;
+twiss, save;
+
+write, table=summ, file=summ_sis18_full_lattice_thin1.dat;
+
+!stop;
+
+! /*
+match,SEQUENCE=sis18lattice;
+VARY,NAME=cokick01,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick02,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick03,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick04,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick05,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick06,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick07,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick08,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick09,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick10,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick11,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+VARY,NAME=cokick12,STEP=0.001;!,LOWER=_0.4, UPPER=_0.10; 
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s01dx5h,x=-0.004; // x soll s01.. den wert -0.004 haben
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s02dx5h,x=-0.003;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s03dx5h,x=0.007;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s04dx5h,x=-0.004;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s05dx5h,x=-0.004;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s06dx5h,x=0.0035;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s07dx5h,x=0.0055;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s08dx5h,x=-0.0015;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s09dx5h,x=-0.008;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s10dx5h,x=-0.006;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s11dx5h,x=0.001;
+CONSTRAINT,SEQUENCE=sis18lattice,RANGE=s12dx5h,x=-0.0015;
+LMDIF,calls=20000,tolerance=1.e-8;
+endmatch;
+! */
+
+! /*
+cokick_S04MU1A:=-0.000115*25.0; !0.0;
+cokick_S05MU2A:=-0.000104*25.0; !0.0;
+cokick_S06MU1A:=0.000268*5.0;   !0.0;
+cokick_S07MU2A:=0.000242*5.0;   !0.0;
+! */
+
+select, flag=twiss, clear;
+!select, flag=twiss, pattern='dx5h',column=s,x; 
+!select, flag=twiss, pattern=column=name,s,x,betx; 
+select, flag=twiss, pattern=column=s,x,betx; 
+twiss, table=twiss, file=sis18_full_lattice_thin2.twiss;
+twiss, save;
+
+write, table=summ, file=summ_sis18_full_lattice_thin2.dat;
+
+select, flag=twiss, clear;
+!select, flag=twiss, pattern='dx5h',column=s,x; 
+!select, flag=twiss, pattern=column=name,s,x,betx; 
+select, flag=twiss, pattern=column=name,keyword,s,l,k1l,x,betx; 
+twiss, table=twiss, file=sis18_full_lattice_thin3.twiss;
+twiss, save;
+
+
+/*
+xessep0=-0.055;
+xessep=table(twiss,sis18lattice$start,x);
+betxsep=table(twiss,sis18lattice$start,betx);
+value, xessep, betxsep;
+epsxsep=(xessep0-xessep)*(xessep0-xessep)/betxsep;
+value, epsxsep;
+*/
+
+! stop;

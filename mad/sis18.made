@@ -1,0 +1,72 @@
+//                                    S I S 18
+// The kickers to generate the local orbit bump for the beam injection are included in this lattice. The output is firstly used by lo_bump.py to compute the kick strengths required inject the beam with a given offset and angle. Secondly the output is used by patric_sp. For both purposes, the kick strengths have to be 0. Only for testing purposes other values should be set.
+
+//TITLE, " -- SIS -- :  bend. quad. sex.  with correction to fringe with kickers for injection";
+option, -echo;
+
+beam, particle=U, mass=238, charge=28, gamma=1.012;
+Q_hor = 4.17;
+Q_vec = 3.30;
+
+!---------------------  DRIFT SPACES DEFINITION  ---------------------
+DR1: DRIFT, L=0.6450000;
+DR2: DRIFT, L=0.9700000;
+DR3: DRIFT, L=6.8390117;
+DR4: DRIFT, L=0.6000000;
+DR5: DRIFT, L=0.7098000;
+DR6: DRIFT, L=0.4998000;
+DRB: DRIFT, L= 2.617993877991;
+
+
+!--------------------------  BENDING MAGNET ---------------------------
+ALPHA  := 15 * RADDEG;
+LL  := 150 * RADDEG;
+PFR := 7.3 * RADDEG;
+FI  := 0.7;
+!fi=0.0;
+RB: SBEND, L=LL, ANGLE=ALPHA, E1=PFR, E2=PFR, HGAP=0.035, FINT=FI;
+RB1: SBEND, L= LL/2.0, ANGLE= ALPHA/2.0, E1= PFR, E2=0.0, HGAP=0.035, FINT=FI/2.0;
+RB2: SBEND, L= LL/2.0, ANGLE= ALPHA/2.0, E1= 0.0, E2=PFR, HGAP=0.035, FINT=FI/2.0;
+
+! ------------------- horizontal quadrupole ----------------------------
+QS1F: QUADRUPOLE, L=1.04/5., K1=0.296;
+QS2D: QUADRUPOLE, L=1.04/5., K1=-0.501;
+QS3T: QUADRUPOLE, L=0.4804/3., K1=0.656;
+
+
+ 
+
+! ---------------------------  LINE DEFINITION --------------------------
+! Sections without injection devices, steeres and position monitors
+CELLA: LINE=(DR1, RB, DR2, RB, DR3, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
+
+!------------------------------------------------------------------------
+sis18: LINE=(12*CELLA);  // SIS18 without bump and steeres
+
+beam;
+USE, sequence=sis18;
+
+match, sequence=sis18;
+	global, sequence=sis18, Q1=Q_hor, Q2=Q_vec;  
+	vary, name=QS1F->K1, step=2.0e-4;
+	vary, name=QS2D->K1, step=2.0e-4;  
+	//global, sequence=sis_sa, DQ1=0.00;
+	//global, sequence=sis_sa, DQ2=0.00;
+	LMDIF, calls=200, tolerance=1.e-21;
+endmatch;   
+  
+
+select, flag=sectormap, clear;
+select, flag=sectormap, range=#s/#e;
+select, flag=twiss, clear;
+select, flag=twiss, column=name, keyword, s, L, mux, muy, alfx, alfy, betx, bety, dx, dmux, dmuy;     
+select, flag=error, pattern="^q.*";
+
+twiss, chrom, file=twiss_inj.txt;
+twiss, sectormap, sectorfile=sectormap_inj.txt;  
+ 
+plot, haxis=s,vaxis=muxcd;
+ 
+
+
+stop;

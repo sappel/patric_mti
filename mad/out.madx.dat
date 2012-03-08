@@ -1,0 +1,138 @@
+
+  +++++++++++++++++++++++++++++++++++++++++++
+  +              MAD-X 5.00.00              +
+  +           Production Version            +
+  + Code Modification Date: 28.02.2011      +
+  + Execution Time Stamp: 08.03.12 13.34.30 +
+  +++++++++++++++++++++++++++++++++++++++++++
+!                                    S I S 18
+
+! The kickers to generate the local orbit bump for the beam injection are included in this lattice.
+
+! The output is firstly used by lo_bump.py to compute the kick strengths required inject the beam
+
+! with a given offset and angle. Secondly the output is used by patric_sp. For both purposes, the
+
+! kick strengths have to be 0. Only for testing purposes other values should be set.
+
+
+
+TITLE, " -- SIS -- :  bend. quad. sex.  with correction to fringe with kickers for injection";
+
+
+
+option, -echo;
+
+START MATCHING
+
+number of sequences: 1
+sequence name: sis18
+number of variables:    2
+user given constraints: 2
+total constraints:      2
+
+START LMDIF:
+
+Initial Penalty Function =   0.19166986E+01
+
+
+call:       4   Penalty function =   0.10533522E-02
+call:       7   Penalty function =   0.13090114E-08
+ ++++++++++ LMDIF ended: converged successfully
+call:       7   Penalty function =   0.13090114E-08
+
+MATCH SUMMARY
+
+Node_Name                  Constraint   Type  Target Value       Final Value        Penalty
+--------------------------------------------------------------------------------------------------
+Global constraint:         q1           4     4.17000000E+00     4.17000326E+00     1.06224358E-09
+Global constraint:         q2           4     3.35000000E+00     3.35000157E+00     2.46767863E-10
+
+
+Final Penalty Function =   1.30901145e-09
+
+
+
+
+
+Variable                 Final Value  Initial Value Lower Limit  Upper Limit 
+--------------------------------------------------------------------------------
+qs1f->k1                  2.85793e-01  2.96000e-01 -1.00000e+20  1.00000e+20
+qs2d->k1                 -4.98321e-01 -5.01000e-01 -1.00000e+20  1.00000e+20
+
+END MATCH SUMMARY
+
+VARIABLE "TAR" SET TO   1.30901145e-09
+enter Twiss module
+++++++ info: Zero value of SIGT replaced by 1.
+++++++ info: Zero value of SIGE replaced by 1/1000.
+  
+iteration:   1 error:   2.001294E-06 deltap:   1.000000E-06
+orbit:   2.640891E-06  1.850365E-07  0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00
+  
+iteration:   2 error:   1.321222E-12 deltap:   1.000000E-06
+orbit:   2.640891E-06  1.850364E-07  0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00
+++++++ info: Zero value of SIGT replaced by 1.
+++++++ info: Zero value of SIGE replaced by 1/1000.
+  
+iteration:   1 error:   0.000000E+00 deltap:   0.000000E+00
+orbit:   0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00
+
+++++++ table: summ
+
+            length             orbit5               alfa            gammatr 
+       216.7239467                 -0      0.04514948592        4.706234846 
+
+                q1                dq1            betxmax              dxmax 
+       4.170003259       -4.235271142        15.29454492        2.825565125 
+
+             dxrms             xcomax             xcorms                 q2 
+        2.29646543                  0                  0        3.350001571 
+
+               dq2            betymax              dymax              dyrms 
+      -5.691014784        28.24271461                  0                  0 
+
+            ycomax             ycorms             deltap            synch_1 
+                 0                  0                  0        10.08830407 
+
+           synch_2            synch_3            synch_4            synch_5 
+      0.6283185307      0.06283185307                  0      0.02901817331 
+enter Twiss module
+++++++ info: Zero value of SIGT replaced by 1.
+++++++ info: Zero value of SIGE replaced by 1/1000.
+  
+iteration:   1 error:   0.000000E+00 deltap:   0.000000E+00
+orbit:   0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00
+
+++++++ table: summ
+
+            length             orbit5               alfa            gammatr 
+       216.7239467                 -0      0.04514948592        4.706234846 
+
+                q1                dq1            betxmax              dxmax 
+       4.170003259       -3.845194861        15.29454492        2.825565125 
+
+             dxrms             xcomax             xcorms                 q2 
+        2.29646543                  0                  0        3.350001571 
+
+               dq2            betymax              dymax              dyrms 
+       -6.15210652        28.24271461                  0                  0 
+
+            ycomax             ycorms             deltap            synch_1 
+                 0                  0                  0                  0 
+
+           synch_2            synch_3            synch_4            synch_5 
+                 0                  0                  0                  0 
+Plot - default table plotted: twiss
+++++++ info: Zero value of SIGT replaced by 1.
+++++++ info: Zero value of SIGE replaced by 1/1000.
+
+ GXPLOT-X11  1.50 initialized
+
+ plot number =            1
+
+  Number of warnings: 0
+
+  +++++++++++++++++++++++++++++++++++
+  + MAD-X 5.00.00 finished normally +
+  +++++++++++++++++++++++++++++++++++

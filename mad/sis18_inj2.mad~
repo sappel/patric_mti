@@ -1,0 +1,407 @@
+//                                    S I S 18
+// The kickers to generate the local orbit bump for the beam injection are included in this lattice. The output is firstly used by lo_bump.py to compute the kick strengths required inject the beam with a given offset and angle. Secondly the output is used by patric_sp. For both purposes, the kick strengths have to be 0. Only for testing purposes other values should be set.
+
+//TITLE, " -- SIS -- :  bend. quad. sex.  with correction to fringe with kickers for injection";
+option, -echo;
+
+beam, particle=U, mass=238, charge=28, gamma=1.012;
+Q_hor = 4.33;
+Q_vec = 3.30;
+
+!---------------------  DRIFT SPACES DEFINITION  ---------------------
+DR1: DRIFT, L=0.6450000;
+DR2: DRIFT, L=0.9700000;
+DR3: DRIFT, L=6.8390117;
+DR4: DRIFT, L=0.6000000;
+DR5: DRIFT, L=0.7098000;
+DR6: DRIFT, L=0.4998000;
+DRB: DRIFT, L= 2.617993877991;
+
+! partial drift spaces for injection kickers (without length) and 
+! injection point; notes p. 128; SP
+DR3a: DRIFT, L=5.30; ! till bumper in S01 and S03
+DR3b: DRIFT, L=1.54; ! till next quadrupole in S01 and S03
+DR3c: DRIFT, L=5.86; ! till bumper S11
+DR3d: DRIFT, L=0.98; ! till next quadrupole in S11
+DR3e: DRIFT, L=1.00; ! till bumper in S12
+DR3f: DRIFT, L=4.46; ! from bumper to beginning of septum
+DR3g: DRIFT, L=0.50; ! length of septum
+DR3h: DRIFT, L=0.88; ! injection point to next quadrupole in S12
+
+!---------------------------------------------------------------------
+
+!--------------------------  BENDING MAGNET ---------------------------
+ALPHA  := 15 * RADDEG;
+LL  := 150 * RADDEG;
+PFR := 7.3 * RADDEG;
+FI  := 0.7;
+!fi=0.0;
+RB: SBEND, L=LL, ANGLE=ALPHA, E1=PFR, E2=PFR, HGAP=0.035, FINT=FI;
+RB1: SBEND, L= LL/2.0, ANGLE= ALPHA/2.0, E1= PFR, E2=0.0, HGAP=0.035, FINT=FI/2.0;
+RB2: SBEND, L= LL/2.0, ANGLE= ALPHA/2.0, E1= 0.0, E2=PFR, HGAP=0.035, FINT=FI/2.0;
+
+! ------------------- horizontal quadrupole ----------------------------
+QS1F: QUADRUPOLE, L=1.04/5., K1=0.296;
+QS2D: QUADRUPOLE, L=1.04/5., K1=-0.501;
+QS3T: QUADRUPOLE, L=0.4804/3., K1=0.656;
+
+! looks like dublett focusing
+!QS1F: QUADRUPOLE, L=1.0400000, K1=0.357893011;
+!QS2D: QUADRUPOLE, L=1.0400000, K1=-0.335373024;
+!QS3T: QUADRUPOLE, L=0.4804000, K1=0.0606702417;
+
+!---------------------------------------------------------------
+
+! -------------------- for injection bump -------------------- ; SP
+S01MB3: HKICKER, L=0, KICK=0;  // kicks must be 0 for use in patric_sp, actual values are set there
+S03MB4: HKICKER, L=0, KICK=0;
+S11MB1: HKICKER, L=0, KICK=0;
+S12MB2: HKICKER, L=0, KICK=0;
+INJ: MARKER;  // for injection point; redundant if always at beginning
+SEPTUM: MARKER;  // marker for septum         
+
+
+!---------Dif of STEERES-------------------------------------------------; SA
+! form SS  
+/*
+cokick:=0.0;
+cokick01:=0;
+cokick02:=0;
+cokick03:=0;
+cokick04:=0;
+cokick05:=0.0;                   
+cokick06:=0.0;
+cokick07:=0.0;
+cokick08:=0.0;
+cokick09:=0.0;
+cokick10:=0.0;
+cokick11:=0.0;
+cokick12:=0.0;
+
+cokick01v:=0.0;
+cokick02v:=0.0;
+cokick03v:=0.0;
+cokick04v:=0.0;
+cokick05v:=0.0;
+cokick06v:=0.0;
+cokick07v:=0.0;
+cokick08v:=0.0;
+cokick09v:=0.0;
+cokick10v:=0.0;
+cokick11v:=0.0;
+cokick12v:=0.0; 
+*/            
+
+//      messung
+cokick01:=-2.50472e-04;  
+cokick02:=-3.28025e-04;  
+cokick03:=1.38055e-04;
+cokick04:=2.39214e-04; 
+cokick05:=-7.71641e-05; 
+cokick06:=1.54714e-04;
+cokick07:=2.02404e-04;
+cokick08:=2.20557e-04; 
+cokick09:=-5.36612e-04;
+cokick10:=-1.82902e-04; 
+cokick11:= 4.56240e-04;
+cokick12:=1.70124e-04; 
+cokick01v:=1.68336e-04;  
+cokick02v:=-9.35670e-05; 
+cokick03v:=1.10198e-04;  
+cokick04v:=-2.06820e-04;  
+cokick05v:=-6.86630e-05; 
+cokick06v:=1.30755e-05;
+cokick07v:=-7.59676e-05; 
+cokick08v:=5.55149e-05; 
+cokick09v:=-4.94028e-05; 
+cokick10v:=1.38918e-05;  
+cokick11v:=-8.06935e-05;  
+cokick12v:=-4.03946e-05;  
+                  
+
+
+/*      madx varian
+cokick01:=2.60296e-04;  
+cokick02:=-3.27968e-04;  
+cokick03:=1.37899e-04;  
+cokick04:=2.43258e-04;  
+cokick05:=-7.70174e-05;  
+cokick06:=1.50280e-04;  
+cokick07:=2.12055e-04;  
+cokick08:=2.24300e-04;  
+cokick09:=-5.48120e-04;  
+cokick10:=1.87505e-04;  
+cokick11:=4.68692e-04;  
+cokick12:=1.72758e-04;  
+
+
+cokick01v:=1.68622e-04;  
+cokick02v:=-8.85913e-05;  
+cokick03v:=1.06078e-04; 
+cokick04v:=-2.07986e-04;  
+cokick05v:=-6.85574e-05;  
+cokick06v:=1.29658e-05;  
+cokick07v:=-7.55666e-05; 
+cokick08v:=5.38165e-05;  
+cokick09v:=-4.79918e-05;  
+cokick10v:= 1.40447e-05;  
+cokick11v:=-8.18384e-05;  
+cokick12v:=-4.14325e-05;     
+*/
+
+
+cokick_S04MU1A:=0.0;
+cokick_S05MU2A:=0.0;
+cokick_S06MU1A:=0.0;
+cokick_S07MU2A:=0.0;
+
+S01MU1A: hkicker, kick:=cokick01;
+S01MU2A: hkicker, kick:=cokick;
+S02MU1A: hkicker, kick:=cokick02;
+S02MU2A: hkicker, kick:=cokick;
+S03MU1A: hkicker, kick:=cokick03;
+S03MU2A: hkicker, kick:=cokick;
+S04MU1A: hkicker, kick:=cokick_S04MU1A;        // for bump at ES septum
+S04MU2A: hkicker, kick:=cokick04;
+S05MU1A: hkicker, kick:=cokick05;
+S05MU2A: hkicker, kick:=cokick_S05MU2A;        // for bump at ES septum
+S06MU1A: hkicker, kick:=cokick_S06MU1A;        // for bump at mgn septum
+S06MU2A: hkicker, kick:=cokick06;
+S07MU1A: hkicker, kick:=cokick07;
+S07MU2A: hkicker, kick:=cokick_S07MU2A;        // for bump at mgn septum
+S08MU1A: hkicker, kick:=cokick08;
+S08MU2A: hkicker, kick:=cokick;
+S09MU1A: hkicker, kick:=cokick09;
+S09MU2A: hkicker, kick:=cokick;
+S10MU1A: hkicker, kick:=cokick10;
+S10MU2A: hkicker, kick:=cokick;
+S11MU1A: hkicker, kick:=cokick11;
+S11MU2A: hkicker, kick:=cokick;
+S12MU1A: hkicker, kick:=cokick12;
+S12MU2A: hkicker, kick:=cokick;
+
+
+S01KM2DV: vkicker, kick:=cokick01v;
+S02KM2DV: vkicker, kick:=cokick02v;
+S03KM2DV: vkicker, kick:=cokick03v;
+S04KM2DV: vkicker, kick:=cokick04v;
+S05KM2DV: vkicker, kick:=cokick05v;
+S06KM2DV: vkicker, kick:=cokick06v;
+S07KM2DV: vkicker, kick:=cokick07v;
+S08KM2DV: vkicker, kick:=cokick08v;
+S09KM2DV: vkicker, kick:=cokick09v;
+S10KM2DV: vkicker, kick:=cokick10v;
+S11KM2DV: vkicker, kick:=cokick11v;
+S12KM2DV: vkicker, kick:=cokick12v;
+
+
+!----------Dif. of the bending block-------------------------------------; SA
+! With dipedge elements and steerers for thin lattice from SS
+BENDSECT01: LINE=(DR1, RB1, S01MU1A, RB2, DR2, RB1, S01MU2A, RB2);
+BENDSECT02: LINE=(DR1, RB1, S02MU1A, RB2, DR2, RB1, S02MU2A, RB2);
+BENDSECT03: LINE=(DR1, RB1, S03MU1A, RB2, DR2, RB1, S03MU2A, RB2);
+BENDSECT04: LINE=(DR1, RB1, S04MU1A, RB2, DR2, RB1, S04MU2A, RB2);
+BENDSECT05: LINE=(DR1, RB1, S05MU1A, RB2, DR2, RB1, S05MU2A, RB2);
+BENDSECT06: LINE=(DR1, RB1, S06MU1A, RB2, DR2, RB1, S06MU2A, RB2);
+BENDSECT07: LINE=(DR1, RB1, S07MU1A, RB2, DR2, RB1, S07MU2A, RB2);
+BENDSECT08: LINE=(DR1, RB1, S08MU1A, RB2, DR2, RB1, S08MU2A, RB2);
+BENDSECT09: LINE=(DR1, RB1, S09MU1A, RB2, DR2, RB1, S09MU2A, RB2);
+BENDSECT10: LINE=(DR1, RB1, S10MU1A, RB2, DR2, RB1, S10MU2A, RB2);
+BENDSECT11: LINE=(DR1, RB1, S11MU1A, RB2, DR2, RB1, S11MU2A, RB2);
+BENDSECT12: LINE=(DR1, RB1, S12MU1A, RB2, DR2, RB1, S12MU2A, RB2);
+ 
+!---------------------------- Position Monitors ---------------------; SA
+! Monitors according to mirko file ZEUS_21_22.MIX from D. Pfeiffer in 
+!  /u/ssorge/dsynchrotrons/dlattices/dsis18/ddorotheapfeiffer_20080820
+
+S01DX5H: hmonitor;
+S01DX5V: vmonitor;
+S02DX5H: hmonitor;
+S02DX5V: vmonitor;
+S03DX5H: hmonitor;
+S03DX5V: vmonitor;
+S04DX5H: hmonitor;
+S04DX5V: vmonitor;
+S05DX5H: hmonitor;
+S05DX5V: vmonitor;
+S06DX5H: hmonitor;
+S06DX5V: vmonitor;
+S07DX5H: hmonitor;
+S07DX5V: vmonitor;
+S08DX5H: hmonitor;
+S08DX5V: vmonitor;
+S09DX5H: hmonitor;
+S09DX5V: vmonitor;
+S10DX5H: hmonitor;
+S10DX5V: vmonitor;
+S11DX5H: hmonitor;
+S11DX5V: vmonitor;
+S12DX5H: hmonitor;
+S12DX5V: vmonitor;
+
+! ---------------------------  LINE DEFINITION --------------------------
+! Sections without injection devices, steeres and position monitors
+CELLA: LINE=(DR1, RB, DR2, RB, DR3, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
+
+! SIS-18 starting at injection point, S12 from injection point till S01
+SEC12b: LINE=(INJ, DR3h, 5*(QS1F), DR4, 5*(QS2D), S12KM2DV, DR5, 3*(QS3T), DR6, S12DX5H, S12DX5V);
+
+! S01
+SEC1: LINE=(BENDSECT01, DR3a, S01MB3, DR3b, 5*(QS1F), S01KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6,  S01DX5H, S01DX5V);
+
+! S02
+SEC2:LINE=(BENDSECT02, DR3, 5*(QS1F), S02KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S02DX5H, S02DX5V);
+
+! S03
+SEC3: LINE=(BENDSECT03, DR3a, S03MB4, DR3b, 5*(QS1F), S03KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S03DX5H, S03DX5V);
+
+! S04
+SEC4:LINE=(BENDSECT04, DR3, 5*(QS1F), S04KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S04DX5H, S04DX5V);
+
+! S05
+SEC5:LINE=(BENDSECT05, DR3, 5*(QS1F), S05KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S05DX5H, S05DX5V);
+
+! S06
+SEC6:LINE=(BENDSECT06, DR3, 5*(QS1F), S06KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S06DX5H, S06DX5V);
+
+! S07
+SEC7:LINE=(BENDSECT07, DR3, 5*(QS1F), S07KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S07DX5H, S07DX5V);
+
+! S08
+SEC8:LINE=(BENDSECT08, DR3, 5*(QS1F), S08KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S08DX5H, S08DX5V);
+
+! S09
+SEC9:LINE=(BENDSECT09, DR3, 5*(QS1F), S09KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S09DX5H, S09DX5V);
+
+! S10
+SEC10:LINE=(BENDSECT10, DR3, 5*(QS1F), S10KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S10DX5H, S10DX5V);
+
+! S11
+SEC11: LINE=(BENDSECT11, DR3c, S11MB1, DR3d, 5*(QS1F), S11KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6 S11DX5H, S11DX5V);
+
+SEC12: LINE=(BENDSECT12, DR3e, S12MB2, DR3f, INJ, DR3g, 5*(QS1F), S12KM2DV, DR4, 5*(QS2D), DR5, 3*(QS3T), DR6, S12DX5H, S12DX5V);
+
+! S12a from beginning till injection point
+SEC12a: LINE=(BENDSECT12, DR3e, S12MB2, DR3f, SEPTUM, DR3g, SEPTUM);
+
+!------------------------------------------------------------------------
+//sis18: LINE=(12*CELLA);  // SIS18 without bump and steeres
+//sis18: LINE=(SEC1, SEC2, SEC3, SEC4, SEC5, SEC6, SEC7, SEC8, SEC9, SEC10, SEC11, SEC12);  // with bump and steeres, beginning at S01
+
+// SIS18 ready for injection, beginning at injection point
+sis18: LINE=(SEC12b, SEC1, SEC2, SEC3, SEC4, SEC5, SEC6, SEC7, SEC8, SEC9, SEC10, SEC11, SEC12a);
+
+
+beam;
+USE, sequence=sis18;
+
+match, sequence=sis18;
+	global, sequence=sis18, Q1=Q_hor, Q2=Q_vec;  
+//constraint, sequence=sis18, range=#e, MUX=4.19;
+//constraint, sequence=sis18, range=#e, MUY=3.29;
+	vary, name=QS1F->K1, step=2.0e-4;
+	vary, name=QS2D->K1, step=2.0e-4;  
+	//vary, name=QS3T, step=1.e-4;  
+	//global, sequence=sis_sa, DQ1=0.00;
+	//global, sequence=sis_sa, DQ2=0.00;
+	LMDIF, calls=200, tolerance=1.e-21;
+endmatch;   
+  
+
+match, SEQUENCE=sis18;           // vlaues form measurement
+// hor
+VARY, NAME=cokick01, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick02, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick03, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick04, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick05, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick06, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick07, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;
+VARY, NAME=cokick08, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;
+VARY, NAME=cokick09, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;
+VARY, NAME=cokick10, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick11, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick12, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+ 
+// vec
+VARY, NAME=cokick01v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;       
+VARY, NAME=cokick02v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick03v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;
+VARY, NAME=cokick04v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick05v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick06v, STEP=0.001; //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick07v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10; 
+VARY, NAME=cokick08v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;  
+VARY, NAME=cokick09v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;    
+VARY, NAME=cokick10v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;  
+VARY, NAME=cokick11v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;  
+VARY, NAME=cokick12v, STEP=0.001;  //,LOWER=_0.4, UPPER=_0.10;                            
+
+// hor
+CONSTRAINT, SEQUENCE=sis18, RANGE=S01DX5H, x=-0.004;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S02DX5H, x=-0.002;
+CONSTRAINT, SEQUENCE=sis18, RANGE=S03DX5H, x=0.002;
+CONSTRAINT, SEQUENCE=sis18, RANGE=S04DX5H, x=-0.002;
+CONSTRAINT, SEQUENCE=sis18, RANGE=S04DX5V, y=0.004;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S05DX5V, y=-0.004;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S06DX5V, y=0.003;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S07DX5V, y=0.005;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S08DX5V, y=-0.003;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S09DX5V, y=-0.008;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S10DX5V, y=-0.006;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S11DX5V, y=0.002;  
+
+// vec
+CONSTRAINT, SEQUENCE=sis18, RANGE=S01DX5V, y=0.013;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S02DX5V, y=-0.004;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S03DX5V, y=-0.001;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S05DX5H, x=-0.002;   
+CONSTRAINT, SEQUENCE=sis18, RANGE=S06DX5H, x=0.002;   
+CONSTRAINT, SEQUENCE=sis18, RANGE=S07DX5H, x=0.002;
+CONSTRAINT, SEQUENCE=sis18, RANGE=S08DX5H, x=-0.002;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S09DX5H, x=-0.002;      
+CONSTRAINT, SEQUENCE=sis18, RANGE=S10DX5H, x=-0.002;        
+CONSTRAINT, SEQUENCE=sis18, RANGE=S11DX5H, x=0.002;                                                       
+CONSTRAINT, SEQUENCE=sis18, RANGE=S12DX5H, x=-0.002;  
+CONSTRAINT, SEQUENCE=sis18, RANGE=S12DX5V, y=-0.003; 
+
+LMDIF, calls=20000, tolerance=1.e-8;
+endmatch;
+
+ /*
+match, sequence=sis18;
+	global, sequence=sis18, Q1=Q_hor, Q2=Q_vec;
+	vary, name=QS1F->K1, step=2.0e-4;
+	vary, name=QS2D->K1, step=2.0e-4;  
+ 	LMDIF, calls=200, tolerance=1.e-21;
+endmatch  
+*/
+
+select, flag=twiss, clear;
+select, flag=twiss, column=name, keyword, s, mux, muy;
+
+select, flag=sectormap, clear;
+select, flag=sectormap, range=#s/#e;
+select, flag=twiss, clear;
+select, flag=twiss, column=name, keyword, s, L, mux, muy, alfx, alfy, betx, bety, dx, dmux, dmuy;     
+plot, haxis=s,vaxis=x,y;
+select, flag=error,pattern="^q.*";
+//EOPTION,SEED=5;
+//Ealign,dy:=tgauss(3.0)*2.0e-4, dx:=tgauss(3.0)*2.0e-4;  
+twiss, chrom, file=twiss_inj.txt;
+twiss, sectormap, sectorfile=sectormap_inj.txt;   
+plot, haxis=s,vaxis=x,y, vmin=-20e-3, vmax=20e-3;
+//correct, mode=micado, plane=x, clist="c.tab", mlist="m.tab";
+//correct, mode=micado, plane=y, clist="c.tab", mlist="m.tab"; 
+ 
+
+twiss, chrom, file=twiss_inj.txt;
+twiss, sectormap, sectorfile=sectormap_inj.txt;
+//twiss, table=twiss, file=sis18.twiss;
+//twiss, save;
+
+!setplot, post=2, ascale=1.5, lscale=1.5, rscale=1.5, sscale=1.5, lwidth=3;
+!PLOT, HAXIS=S, VAXIS1=BETX, VAXIS2=BETY, VAXIS3=X, spline, colour=100;!, range=DR1[1]/DR1[3];
+//plot, haxis=s,vaxis=x,y;
+
+stop;
