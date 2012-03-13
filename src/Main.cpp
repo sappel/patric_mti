@@ -68,10 +68,12 @@ double momentum_spread;  //!< rms momentum spread
 double rms_emittance_x0, rms_emittance_y0;  //!< rms emittances
 double mismatch_x, mismatch_y;  //!< transverse mismatch
 double x_septum = 0.0;  //!< distance of septum from nominal orbit [m]
-double offcenter = 0.0;  //!< offset with respect to ideal injection [m]
+double offcenter_x = 0.0;  //!< offset with respect to ideal injection [m]
 double inj_angle = 0.0;  //!< injection angle
 unsigned max_inj = 0;  //!< maximal number of injections
-double inj_phase = 0.;  //!< Phase of injected beamletts in xx'-space
+double inj_phase_x = 0.;  //!< Phase of injected beamletts in xx'-space
+double offcente_y=0.;  
+double inj_phase_y=0.;
 unsigned sept_return = 0;  //!< Number of revoultions till first return to septum (close to 1/Q_f)
 int bumpI;  
 double amp0=0.;   
@@ -246,7 +248,7 @@ void input_from_file(string filename, int id){
   fscanf(cfg_file_ptr, "%lf", &x_septum);  // introduced by SP    
 
   fscanf(cfg_file_ptr, "%s", dummy_string);
-  fscanf(cfg_file_ptr, "%lf", &offcenter);  // meaning changed by SP 
+  fscanf(cfg_file_ptr, "%lf", &offcenter_x);  // meaning changed by SP 
 
   fscanf(cfg_file_ptr, "%s", dummy_string);
   fscanf(cfg_file_ptr, "%lf", &inj_angle);  // introduced by SP    
@@ -363,7 +365,7 @@ void print_IDL(string data_dir, int numprocs, double cell_length, int Nelements,
   fprintf(out, "%g\n", tuney);
   fprintf(out, "%g\n", lattice.get_element()->get_betx());
   fprintf(out, "%g\n", lattice.get_element()->get_alpx());
-  fprintf(out, "%g\n", offcenter);  
+  fprintf(out, "%g\n", offcenter_x);  
   fprintf(out, "%g\n", inj_angle);         
   fprintf(out, "%g\n", amp0);
   fprintf(out, "%g\n", ampp0);
@@ -461,7 +463,6 @@ main(int argc, char* argv[]){
   }
 
   // Other variables:
-
   double dx = 2.0*piperadius/(NX-1.0);  // needed for Poisson solver and grids
   double dy = 2.0*piperadius/(NY-1.0);  // needed for Poisson solver and grids
   double dz = circum/NZ;
@@ -474,6 +475,8 @@ main(int argc, char* argv[]){
     zm = 1.5*0.5*circum*bunchfactor;  // for parabolic bunch
   double zm1 = -zm*1.0;  // left bunch boundary
   double zm2 = zm*1.0;  // right bunch boundary
+  if(init_pic_z==7)
+	zm=0.25;
   double rmsToFull;  // ratio of rms to full emittance for Bump; SP
 
   // open output file patric.dat:
@@ -594,80 +597,49 @@ main(int argc, char* argv[]){
   // Init 2D Greens function for poisson solver
 
   Greenfb gf1(rho_xy, image_x, image_y);  // open boundary condition
-  
-  // set longitudinal distribution:
 
-  // pointer to long. distribution function
-  void (Pic::* long_dist)(double, double, double, long, long*, int);
-  double d1 = 0., d2 = 0.;  // meaning depends on momentum distribution; SP
-  int i1 = 0;  // same
-  switch(init_pic_z){
-  case 0:  //  coasting + Elliptic
-    long_dist = &Pic::parabolic_dc;
-    d1 = bunchfactor;
-    d2 = circum;
-    break;
-  case 1:  //  bunch + Elliptic  (1.5 correction factor for bunching)
-    long_dist = &Pic::parabolic;
-    d1 = zm;
-    break;
-  case 2:  //  coasting + Gauss
-    long_dist = &Pic::coast_gauss; //(bunchfactor, circum, momentum_spread, NPIC, &dl);
-    d1 = bunchfactor;
-    d2 = circum;
-    break;
-  case 3:  //  bunch + Gauss
-    long_dist = &Pic::bunch_gauss;
-    d1 = zm;
-    d2 = circum;
-    break;
-  case 4:  //  const. bunch dist.
-    long_dist = &Pic::bunch_const;
-    d1 = zm;
-    d2 = circum;
-    i1 = linrf;
-    break;
-  case 5:  //  air bag dist.
-    long_dist = &Pic::barrier_air_bag;
-    d1 = zm;
-    break;
-  case 6:  //  bunch air bag dist.
-    long_dist = &Pic::bunch_air_bag;
-    d1 = zm;
-    d2 = circum;
-    break;
-  default:
-    printf("Invalid option for longitudinal particle distribution. Aborting.\n");
-    MPI_Abort(MPI_COMM_WORLD, 0);
-  }
-
-
-  // set transverse distribution:
-
-  // pointer to long. distribution function
-  void (Pic::* trans_dist)(double, double, double, double, double, double, double, double, double, double, double, double, long*);
+  // for the beam radius cacluation;  factor for rms equivalent 
   switch(init_pic_xy){
   case 0:  // Waterbag
-    trans_dist = &Pic::waterbag_xy;
-    rmsToFull = 6;
+	rmsToFull = 6;
     break;
   case 1:  // KV
-    trans_dist = &Pic::KV_xy;
-    rmsToFull = 4;
+	rmsToFull = 4;
     break;
   case 2:  // Semi-Gauss
-    trans_dist = &Pic::SG;
     rmsToFull = 4;  // approximate
     break;
   case 3:  // Gauss
-  trans_dist = &Pic::Gauss_xy;
-  rmsToFull = 4;  // approximate
+  	rmsToFull = 4;  // approximate
     break;
   default:
     printf("Invalid option for transverse particle distribution. Aborting.\n");
     MPI_Abort(MPI_COMM_WORLD, 0);
-  }                                 
+  }
 
+  // injection bump initialize 
+  Bump lob(tunex);     
+  double a; // beam radius horizontal
+
+    // 0  (version SP) , 1 (flexibility)  ; SA 
+  if(bumpI==0){
+  // The bump height is defined by user given offcenter parameter. The injection angle is equal to the septum tilt angle (as done in SIS18). 
+  cout << "version SP" << endl; 
+  a = sqrt(twiss_TK.betx*eps_x*rmsToFull)*0.001+twiss_TK.Dx*momentum_spread;  // half width of injected beam [m] with WB distribution, change to Main, SA 
+  offcenter_x=x_septum + d_septum + a; 
+  amp0=offcenter_x; 
+  ampp0=inj_angle;
+  delAmp=(amp0-2*a)/double(max_inj);   //0.0041*3;//    
+  lob.BumpSp(&lattice,max_inj, myid, amp0, ampp0, delAmp); // local orbit bump for beam injection; SP
+  }
+
+  if (bumpI!=0){
+	cout << "flexibility version" << endl; 
+	lob.BumpModi(&lattice,amp0);
+  }  
+ 
+
+  
   if(myid == 0)
     cout << "Expected single beamlett tune shifts: dQ_x="
 	 << rp*SP.Z*current*circum / (rmsToFull*PI*clight*qe*SP.A*pow(SP.beta0*SP.gamma0, 3)*(eps_x+sqrt(eps_x*eps_y*tunex/tuney)))*1e6
@@ -675,25 +647,6 @@ main(int argc, char* argv[]){
 	 << rp*SP.Z*current*circum / (rmsToFull*PI*clight*qe*SP.A*pow(SP.beta0*SP.gamma0, 3)*(eps_y+sqrt(eps_x*eps_y*tuney/tunex)))*1e6
 	 << endl;            
   
-  Bump lob(tunex);   
-   // half width of injected beam [m] with WB distribution, change to Main, SA 
-  double a=sqrt(twiss_TK.betx*eps_x*rmsToFull)*0.001+twiss_TK.Dx*momentum_spread;
-    // 0  (version SP) , 1 (flexibility)  ; SA 
-  if(bumpI==0){
-  // The bump height is defined by user given offcenter parameter. The injection angle is equal to the septum tilt angle (as done in SIS18). 
-  cout << "version SP" << endl; 
-  offcenter=x_septum + d_septum + a; 
-  amp0=offcenter; 
-  ampp0=inj_angle;
-  delAmp=(amp0-2*a)/double(max_inj);   //0.0041*3;//    
-  lob.BumpSp(&lattice,max_inj, myid, amp0, ampp0, delAmp);
-  // local orbit bump for beam injection; SP
-  }
-  if (bumpI!=0){
-	cout << "flexibility version" << endl; 
-	lob.BumpModi(&lattice,amp0);
-  }  
-
   
   // print IDL parameter file idl.dat:       
   if(myid == 0){
@@ -758,40 +711,112 @@ main(int argc, char* argv[]){
   long *sl_slice = new long;
   double *momenta = new double[19];
   double *momenta_tot = new double[19];       
-  double y0=0.00;//0.015;  
-  double ys0=0.0e-3;
   double tmp=0;
+  long size_old;	
+  offcente_y=0.0;  
+  inj_phase_y=0.0e-3;
+  
   //--------------------------------------------------------------------------
   //----------------------- start loop (do...while) --------------------------
   //--------------------------------------------------------------------------
-
+   double z0;
    do{  // injection; SP
-    if(!(counter%Nelements)){  // at beginning each turn...
-      if(inj_counter < max_inj){  // ... inject beamlett (if apropriate) ...
-	    (NewPics.*long_dist)(d1, d2, momentum_spread, NPIC, &dl, i1);
-	    (NewPics.*trans_dist)(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy,pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, twiss_TK.Dx, Ds0, offcenter, inj_angle, y0,ys0, &d); 
-		++inj_counter;
-		N_inj += NPIC; 
-	    *sl_slice = NewPics.localLoss_x(x_septum, 100.);  // loss on septum  
-		loss+=*sl_slice; 
-	   
-	    MPI_Reduce(sl_slice, septLoss, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
-	    Pics.add_particles(*NewPics.get_particles());
-        NewPics.clear_particles();
-	    if(myid == 0)
-	     cout<<"The incoming beamlett number "<<inj_counter<< " lost "<<loss<< " macro particles on the septum.\n";
-	  }    
-      if (amp0 > 0.0 ){    
+    if(!(counter%Nelements))
+	{  // at beginning each turn...
+      	
+	if(inj_counter < max_inj)
+	{
+ 	  size_old=Pics.get_size();
+
+	  // set longitudinal distribution:
+	  switch(init_pic_z){
+	  case 0:  //  coasting + Elliptic
+	    Pics.parabolic_dc(bunchfactor, circum, momentum_spread, NPIC, &dl);
+	    break;
+	  case 1:  //  bunch + Elliptic  (1.5 correction factor for bunching)
+	    Pics.parabolic(zm, 0, momentum_spread, NPIC, &dl);
+	    break;
+	  case 2:  //  coasting + Gauss
+	    Pics.coast_gauss(bunchfactor, circum, momentum_spread, NPIC, &dl); 
+	    break;
+	  case 3:  //  bunch + Gauss
+	    Pics.bunch_gauss(zm, circum, momentum_spread, NPIC, &dl);
+	    break;
+	  case 4:  //  const. bunch dist.		
+	    Pics.bunch_const(zm, circum, momentum_spread, NPIC, &dl,linrf);
+	    break;
+	  case 5:  //  air bag dist.
+	    Pics.barrier_air_bag(zm, momentum_spread, NPIC, &dl);
+	    break;
+	  case 6:  //  bunch air bag dist.
+	    Pics.bunch_air_bag(zm, circum, momentum_spread, NPIC, &dl);
+	    break;
+	  case 7:  //  168 mirco bunches, injection
+		z0=-circum/2.;
+		int l;
+		for (l=0; l<168; l++){
+	    	Pics.parabolic(zm, z0, momentum_spread, NPIC/168, &dl);
+			z0+=1.286;
+			cout << z0 << endl;
+		}
+	    break;
+	  default:
+	    printf("Invalid option for longitudinal particle distribution. Aborting.\n");
+	    MPI_Abort(MPI_COMM_WORLD, 0);
+	  }
+		
+	  // set transverse distribution:
+	  switch(init_pic_xy){
+	  case 0:  // Waterbag
+		rmsToFull = 6;
+	    Pics.waterbag_xy(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy, pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, 
+				        twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcente_y, inj_phase_y, size_old, &d);
+	    break;
+	  case 1:  // KV
+		rmsToFull = 4;
+	    Pics.KV_xy(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy, pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, 
+				   twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcente_y, inj_phase_y, size_old, &d);
+	    break;
+	  case 2:  // Semi-Gauss
+	    rmsToFull = 4;  // approximate
+		Pics.SG(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy, pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, 
+				twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcente_y, inj_phase_y, size_old, &d);
+	    break;
+	  case 3:  // Gauss
+	  	rmsToFull = 4;  // approximate
+	    Pics.Gauss_xy(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy, pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, 
+					  twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcente_y, inj_phase_y, size_old, &d);
+	    break;
+	  default:
+	    printf("Invalid option for transverse particle distribution. Aborting.\n");
+	    MPI_Abort(MPI_COMM_WORLD, 0);
+	  }
+	
+	  *sl_slice = NewPics.localLoss_x(x_septum, 100.);  // loss on septum  
+      loss+=*sl_slice; 
+      MPI_Reduce(sl_slice, septLoss, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+      if(myid == 0)
+     	cout<<"The incoming beamlett number "<<inj_counter+1<< " lost "<<loss<< " macro particles on the septum.\n";
+      N_inj += NPIC; 
+	  inj_counter +=1;
+	}
+	
+
+	// bump reduction
+    if (amp0 > 0.0 )
+	{    
 	   amp0-=delAmp;                                 
-	   if(bumpI==0){   
+	   if(bumpI==0)
+	   {   
 	   	ampp0-=delAmp*ampp0/amp0;     
 	   	lob.decrement();     
 	   }
-	   if (bumpI!=0){
+	   if (bumpI!=0)
 	    lob.decrementModi(amp0);
-	   }
-	  }       
-	}  
+	}	
+   }
+	
+	
     //------------ Start Output----------------------------------------
     // store rms momenta every time step in patric.dat:
     

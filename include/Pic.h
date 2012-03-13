@@ -59,47 +59,45 @@ class Pic{
   // longitudinal distributions
 
   //! coasting beam with parabolic momentum distribution
-  void parabolic_dc(double dummyd, double length, double dp0, long Np, long *d,
-		    int dummyi=0);
+  void parabolic_dc(double dummyd, double length, double dp0, long Np, long *d);
   //! Parabolic bunch
-  void parabolic(double zlm, double z0, double dp0, long Np, long *d, int dummyi=0);
+  void parabolic(double zlm, double z0, double dp0, long Np, long *d);
   //! Coasting, Gaussian; SP
-  void coast_gauss(double dummyd, double length, double dp0, long Np, long *d,
-		   int dummyi=0);
+  void coast_gauss(double dummyd, double length, double dp0, long Np, long *d);
   //! coasting beam
   void coasting_beam(double length, long Np, long *d);
   //! Gaussian momentum spread
   void gaussz(double dp0, long *d);
   //! Gaussian bunch
-  void bunch_gauss(double zlm, double circum, double dp0, long Np, long *d, int dummyi=0);
+  void bunch_gauss(double zlm, double circum, double dp0, long Np, long *d);
   //! Constant bunch dist.
   void bunch_const(double zlm, double circum, double dp0, long Np, long *d, int linrf);
   //! barrier air bag
-  void barrier_air_bag(double zlm, double dummyd, double dp0, long Np, long *d,
-		       int dummyi=0);
+  void barrier_air_bag(double zlm, double dp0, long Np, long *d);
   //! bunch air bag
-  void bunch_air_bag(double zlm, double circum, double dp0, long Np, long *d, int dummyi=0);
-
+  void bunch_air_bag(double zlm, double circum, double dp0, long Np, long *d);
+  // 168 mirco bunches
+ void mirco_bunch(double zlm, double z0, double dp0, long Np, long *d);
 
   // Transverse distributions
 
   //! tranverse waterbag distribution:
   void waterbag_xy(double emittance_x, double emittance_y, double alpha_x, double alpha_y,
   				   double beta_x, double beta_y, double D0, double Ds0, double x0, double xs0, 
-				   double y0, double ys0, long *d);
+				   double y0, double ys0, int size, long *d);
   //! KV distribution
   void KV_xy(double emittance_x, double emittance_y, double alpha_x, double alpha_y,
 			 double beta_x, double beta_y, double D0, double Ds0, double x0, double xs0, 
-			 double y0, double ys0, long *d);
+			 double y0, double ys0, int size, long *d);
   //! Semi-gaussian
   void SG(double emittance_x, double emittance_y, double alpha_x, double alpha_y,
 		  double beta_x, double beta_y, double D0, double Ds0, double x0, double xs0, 
-		  double y0, double ys0, long *d);
+		  double y0, double ys0, int size, long *d);
   //! Gaussian
   void Gauss_xy(double emittance_x, double emittance_y, double alpha_x, double alpha_y,
 	  			double beta_x, double beta_y, double D0, double Ds0, double x0, double xs0, 
-				double y0, double ys0, long *d);
-
+				double y0, double ys0, int size, long *d);
+				
   //! basic PIC output:
 
   void print(int subset);

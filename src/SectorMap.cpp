@@ -86,7 +86,7 @@ Detailed description
 void SectorMap::transport(vektor& R1, vektor& R0)
 {
  double kick_x=0.0, kick_y=0.0;
- if (get_betx()*get_L() > 0.0)
+ if (get_betx() > 0.0)
   {
    kick_x=4.0*PI*get_xix()/(get_betx());
    kick_y=4.0*PI*get_xiy()/(get_bety());	
@@ -103,20 +103,6 @@ void SectorMap::transport(vektor& R1, vektor& R0)
  R1[1] -= kick_x*R0[0]*R0[5];
  R1[3] -= kick_y*R0[2]*R0[5];
 }
-
-/*
-void SectorMap::transport(vektor& R1, vektor& R0){
-  double kick_x=4*PI*get_xix()/get_betx();//get_L();         // chromaticity kick; SA 
-  double kick_y=4*PI*get_xix()/get_betx();//get_L();         // chromaticity kick; SA
-  for(int j=0; j<6; ++j){
-    R1[j] = K[j];  // was 0.0, K[j] inserted for bumper kicks; SP
-    for(int l=0; l<6; ++l)
-      R1[j] += T[j*6+l]*R0[l];
-  }
-  R1[1] += kick_x*R0[0]*R0[5];  // chromaticity kick; SP
-  R1[3] += kick_y*R0[2]*R0[5];  // chromaticity kick; SP
-}
-*/
 
 
 /*!

@@ -11,8 +11,7 @@
 
   // -------------------- longitudinal --------------------
 
-void Pic::parabolic_dc(double bunchfactor, double length, double dp0, long Np, long *d,
-		       int dummyi){
+void Pic::parabolic_dc(double bunchfactor, double length, double dp0, long Np, long *d){
   //length *= 2.0/3.0*bunchfactor;
   dp0 *= sqrt(5.0);
   long i;
@@ -26,7 +25,7 @@ void Pic::parabolic_dc(double bunchfactor, double length, double dp0, long Np, l
 }
 
 
-void Pic::parabolic(double zlm, double z0, double dp0, long Np, long *d, int dummy){
+void Pic::parabolic(double zlm, double z0, double dp0, long Np, long *d){
   dp0 *= sqrt(5.0);
   long i;
   double r1 ,r2, parab_b = 0.0;
@@ -43,8 +42,7 @@ void Pic::parabolic(double zlm, double z0, double dp0, long Np, long *d, int dum
 }
 
 
-void Pic::coast_gauss(double bunchfactor, double length, double dp0, long Np, long *d,  // SP
-		      int dummyi){
+void Pic::coast_gauss(double bunchfactor, double length, double dp0, long Np, long *d){
   coasting_beam(bunchfactor*length, Np, d);
   gaussz(dp0, d);  // ATTENTION: different 'd' than in original main.cpp
 }
@@ -79,7 +77,7 @@ void Pic::gaussz(double dp0, long *d){
 
 // Gaussian bunch with cut distribution
 
-void Pic::bunch_gauss(double zlm, double circum, double dp0, long Np, long *d, int dummy){
+void Pic::bunch_gauss(double zlm, double circum, double dp0, long Np, long *d){
   zlm /= sqrt(5.0);
   long j;
   int linrf = 1;
@@ -154,7 +152,7 @@ void Pic::bunch_const(double zlm, double circum, double dp0, long Np, long *d, i
 }
 
 
-void Pic::barrier_air_bag(double zlm, double dummyd, double dp0, long Np, long *d, int dummyi){
+void Pic::barrier_air_bag(double zlm, double dp0, long Np, long *d){
   dp0 *= sqrt(5.0);
   long i;
   double r1, r2;
@@ -169,7 +167,7 @@ void Pic::barrier_air_bag(double zlm, double dummyd, double dp0, long Np, long *
 }
 
 
-void Pic::bunch_air_bag(double zlm, double circum, double dp0, long Np, long *d, int dummyi){
+void Pic::bunch_air_bag(double zlm, double circum, double dp0, long Np, long *d){
   dp0 *= sqrt(5.0);
   long i;
   double r1, r2;
@@ -190,12 +188,31 @@ void Pic::bunch_air_bag(double zlm, double circum, double dp0, long Np, long *d,
   }
 }
 
+void Pic::mirco_bunch(double zlm, double z0, double dp0, long Np, long *d){
+  dp0 *= sqrt(5.0);
+  long i,j;
+  double r1 ,r2, parab_b = 0.0;
+  Particle tem;
+  for(i=0; i<Np; ++i){
+	r1 = ran1(d);
+	r2 = ran1(d);
+	tem.z = z0 + zlm * sqrt(1.0-pow(1.0-r1, 2.0/3.0))*cos(2.0*PI*r2);
+	tem.dp = (dp0*sin(2.0*PI*r2)
+	      + parab_b*zlm*cos(2.0*PI*r2))*sqrt(1.0-pow(1.0-r1, 2.0/3.0));
+	if(tem.z >= z1 && tem.z < z2)
+	     pics.push_back(tem);
+	     
+	
+  }	
+  
+}
+
 
   // -------------------- transverse --------------------
 
 void Pic::waterbag_xy(double emittance_x, double emittance_y, double alpha_x, double alpha_y,
 		double beta_x, double beta_y, double D0, double Ds0, double x0,
-		double xs0, double y0, double ys0, long *d){
+		double xs0, double y0, double ys0, int size, long *d){
   emittance_x *= 6.;
   emittance_y *= 6.;
   long j;
@@ -205,7 +222,7 @@ void Pic::waterbag_xy(double emittance_x, double emittance_y, double alpha_x, do
   double ymax = sqrt(emittance_y*beta_y);
   double ysmax = sqrt(emittance_y * (1.0+alpha_y*alpha_y) / beta_y);
 
-  for(j=0; j<pics.size(); ++j){
+  for(j=size; j<pics.size(); ++j){
     do{
       x = xmax*(2.0*ran1(d)-1.0);
       y = ymax*(2.0*ran1(d)-1.0);
@@ -224,14 +241,14 @@ void Pic::waterbag_xy(double emittance_x, double emittance_y, double alpha_x, do
 
 void Pic::KV_xy(double emittance_x, double emittance_y, double alpha_x, double alpha_y,
 		double beta_x, double beta_y, double D0, double Ds0, double x0,
-		double xs0, double y0, double ys0, long *d){
+		double xs0, double y0, double ys0, int size, long *d){
   emittance_x *= 4.;
   emittance_y *= 4.;
   long j;
   double u, v, w, rx, rsx, ry, rsy;  
   
 
-  for(j=0; j<pics.size(); ++j){
+  for(j=size; j<pics.size(); ++j){
     u = ran1(d);
     v = ran1(d);
     w = ran1(d);
@@ -252,7 +269,7 @@ void Pic::KV_xy(double emittance_x, double emittance_y, double alpha_x, double a
 
 void Pic::SG(double emittance_x, double emittance_y, double alpha_x, double alpha_y,
 		double beta_x, double beta_y, double D0, double Ds0, double x0,
-		double xs0, double y0, double ys0, long *d){
+		double xs0, double y0, double ys0, int size, long *d){
   long j;
   double u, v, w, s, rx, ry;
 
@@ -261,7 +278,7 @@ void Pic::SG(double emittance_x, double emittance_y, double alpha_x, double alph
   double xmax = 4.*emittance_x*beta_x;
   double ymax = 4.*emittance_y*beta_y;
 
-  for(j=0; j<pics.size(); ++j){
+  for(j=size; j<pics.size(); ++j){
     u = ran1(d);
     v = ran1(d);
     w = ran1(d);
@@ -286,11 +303,11 @@ void Pic::SG(double emittance_x, double emittance_y, double alpha_x, double alph
 
 void Pic::Gauss_xy(double emittance_x, double emittance_y, double alpha_x, double alpha_y,
 		double beta_x, double beta_y, double D0, double Ds0, double x0,
-		double xs0, double y0, double ys0, long *d){
+		double xs0, double y0, double ys0, int size, long *d){
   long j;
   double u, v, w, s, rx, ry, rxs, rys;
 
-  for(j=0; j<pics.size(); ++j){
+  for(j=size; j<pics.size(); ++j){
     do{
       u = 2.0 * ran1(d) - 1.0;
       v = 2.0 * ran1(d) - 1.0;
