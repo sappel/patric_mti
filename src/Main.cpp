@@ -524,7 +524,8 @@ main(int argc, char* argv[]){
   }
 
   // Chromatic correction kick:
-  //  Chrom Chrom0(tunex, tuney, circum/(2.0*PI));
+  Chrom Chrom0;
+
 
   // Octupole:
   Octupole Oct0(koct);
@@ -620,26 +621,32 @@ main(int argc, char* argv[]){
   // injection bump initialize 
   Bump lob(tunex);     
   double a; // beam radius horizontal
-
-    // 0  (version SP) , 1 (flexibility)  ; SA 
-  if(bumpI==0){
-  // The bump height is defined by user given offcenter parameter. The injection angle is equal to the septum tilt angle (as done in SIS18). 
-  cout << "version SP" << endl; 
-  a = sqrt(twiss_TK.betx*eps_x*rmsToFull)*0.001+twiss_TK.Dx*momentum_spread;  // half width of injected beam [m] with WB distribution, change to Main, SA 
-  offcenter_x=x_septum + d_septum + a; 
-  amp0=offcenter_x; 
-  ampp0=inj_angle;
-  delAmp=(amp0-2*a)/double(max_inj);   //0.0041*3;//    
-  lob.BumpSp(&lattice,max_inj, myid, amp0, ampp0, delAmp); // local orbit bump for beam injection; SP
-  }
-
-  if (bumpI!=0){
-	cout << "flexibility version" << endl; 
-	lob.BumpModi(&lattice,amp0);
-  }  
  
-
-  
+  switch(bumpI){
+	case 0:
+	  cout << "no mti"  << endl;
+	  max_inj = 1;
+	  amp0=0;
+	  break;
+	case 1:
+	  // The bump height is defined by user given offcenter parameter. The injection angle is equal to the septum tilt angle (as done in SIS18). 
+	  cout << "mti version SP" << endl; 
+	  a = sqrt(twiss_TK.betx*eps_x*rmsToFull)*0.001+twiss_TK.Dx*momentum_spread;  // half width of injected beam [m] with WB distribution, change to Main, SA 
+	  offcenter_x=x_septum + d_septum + a; 
+	  amp0=offcenter_x; 
+	  ampp0=inj_angle;
+	  delAmp=(amp0-2*a)/double(max_inj);   //0.0041*3;//    
+	  lob.BumpSp(&lattice,max_inj, myid, amp0, ampp0, delAmp); // local orbit bump for beam injection; SP
+	  break;
+	case 2:
+	  cout << "mti flexibility version" << endl; 
+	  lob.BumpModi(&lattice,amp0);
+	  break;
+	default:
+	   printf("Invalid option for bump injection. Aborting.\n");
+	   MPI_Abort(MPI_COMM_WORLD, 0);
+  }
+	 
   if(myid == 0)
     cout << "Expected single beamlett tune shifts: dQ_x="
 	 << rp*SP.Z*current*circum / (rmsToFull*PI*clight*qe*SP.A*pow(SP.beta0*SP.gamma0, 3)*(eps_x+sqrt(eps_x*eps_y*tunex/tuney)))*1e6
@@ -757,7 +764,6 @@ main(int argc, char* argv[]){
 		for (l=0; l<168; l++){
 	    	Pics.parabolic(zm, z0, momentum_spread, NPIC/168, &dl);
 			z0+=1.286;
-			cout << z0 << endl;
 		}
 	    break;
 	  default:
@@ -791,13 +797,15 @@ main(int argc, char* argv[]){
 	    printf("Invalid option for transverse particle distribution. Aborting.\n");
 	    MPI_Abort(MPI_COMM_WORLD, 0);
 	  }
-	
-	  *sl_slice = NewPics.localLoss_x(x_septum, 100.);  // loss on septum  
-      loss+=*sl_slice; 
-      MPI_Reduce(sl_slice, septLoss, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
-      if(myid == 0)
-     	cout<<"The incoming beamlett number "<<inj_counter+1<< " lost "<<loss<< " macro particles on the septum.\n";
-      N_inj += NPIC; 
+	  
+	  if (bumpI==1 or bumpI==2){
+	  	*sl_slice = NewPics.localLoss_x(x_septum, 100.);  // loss on septum  
+      	loss+=*sl_slice; 
+      	MPI_Reduce(sl_slice, septLoss, 1, MPI_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
+	  	if(myid == 0)
+     		cout<<"The incoming beamlett number "<<inj_counter+1<< " lost "<<loss<< " macro particles on the septum.\n";
+      }
+	  N_inj += NPIC; 
 	  inj_counter +=1;
 	}
 	
@@ -806,12 +814,12 @@ main(int argc, char* argv[]){
     if (amp0 > 0.0 )
 	{    
 	   amp0-=delAmp;                                 
-	   if(bumpI==0)
+	   if(bumpI==1)
 	   {   
 	   	ampp0-=delAmp*ampp0/amp0;     
 	   	lob.decrement();     
 	   }
-	   if (bumpI!=0)
+	   if (bumpI==2)
 	    lob.decrementModi(amp0);
 	}	
    }
@@ -851,9 +859,9 @@ main(int argc, char* argv[]){
       // stop when loss tolerance level is exceeded                            (1-Ntot/(max_inj*NPIC))*100.
 	  
       if(myid == 0 && Ntot/N_inj <= lossTol){  // test on numer of injected particles; SP
-	cout<<"Loss tolerance exceeded within "<<counter/Nelements+1<<" turns ("<<
-	  Ntot<<" of "<<N_inj<<" macro particles left). Exiting.\n";
-	cout.flush();
+		cout<<"Loss tolerance exceeded within "<<counter/Nelements+1<<" turns ("<<
+	    Ntot<<" of "<<N_inj<<" macro particles left). Exiting.\n";
+	    cout.flush();
 	MPI_Abort(MPI_COMM_WORLD, 0);
       }  
       //      cout<<counter<<' '<<lattice.get_element()->get_name()<<' '<<lattice.get_element()->get_K(1)<<endl;  //tmp
@@ -1020,9 +1028,9 @@ main(int argc, char* argv[]){
     //Pics.kick(Amp0, ds);
 
     // correct for chromaticity
-    //    if(chroma == 1)  // chromaticity for CF disabled; SP
-    //      Pics.kick(Chrom0, ds);
-
+        if(chroma == 1)  
+			Pics.kick(Chrom0,ds);
+			
     // cavity kick every cell:
 
     if(cavity == 1 && counter%Nelements == 0.0)

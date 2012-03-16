@@ -49,6 +49,8 @@ SectorMap::SectorMap(double sigx, double sigy, double R, double length, double g
   twiss.bety = length/sigy;
   twiss.alpx = 0.0;
   twiss.alpy = 0.0;
+  twiss.xix=pow(sigx/length,2); // added for chromx/y kicka
+  twiss.xiy=pow(sigy/length,2);
   if(R > 0.0)
     twiss.Dx = pow(length/sigx, 2)/R;
   else
@@ -85,23 +87,12 @@ Detailed description
 
 void SectorMap::transport(vektor& R1, vektor& R0)
 {
- double kick_x=0.0, kick_y=0.0;
- if (get_betx() > 0.0)
-  {
-   kick_x=4.0*PI*get_xix()/(get_betx());
-   kick_y=4.0*PI*get_xiy()/(get_bety());	
-  }
-
  for(int j=0;j<6;j++)
    {
     R1[j]=K[j];
     for(int l=0;l<6;l++)
      R1[j]+=T[j*6+l]*R0[l];
    }
-
- // correct for chrom:
- R1[1] -= kick_x*R0[0]*R0[5];
- R1[3] -= kick_y*R0[2]*R0[5];
 }
 
 
@@ -333,29 +324,33 @@ void BeamLine::print_T(){
 }
 
 
-void Octupole::kick(vektor& R1, vektor& R0, double ds){
-  R1[0] = R0[0];
-  R1[1] = R0[1]+1.0/6.0*strength_h*ds*(pow(R0[0], 3) - 0.0*3.0*R0[0]*pow(R0[2], 2));
-  R1[2] = R0[2];
-  R1[3] = R0[3]-1.0/6.0*strength_h*ds*(0.0*3.0*R0[2]*pow(R0[0], 2) - pow(R0[2], 3));
-  R1[4] = R0[4];
-  R1[5] = R0[5];
+void Octupole::kick(vektor& R1, vektor& R0, TwissP& tw, double ds)
+{
+   R1[0]=R0[0];
+   R1[1]=R0[1]+1.0/6.0*strength_h*ds*(pow(R0[0],3)-0.0*3.0*R0[0]*pow(R0[2],2));
+   R1[2]=R0[2];
+   R1[3]=R0[3]-1.0/6.0*strength_h*ds*(0.0*3.0*R0[2]*pow(R0[0],2)-pow(R0[2],3));
+   R1[4]=R0[4];
+   R1[5]=R0[5];
 }
 
 
-Chrom::Chrom(double tunex0, double tuney0, double R){
-  chrom_x = pow(tunex0/R, 2);
-  chrom_y = pow(tuney0/R, 2);
-}
 
+void Chrom::kick(vektor& R1, vektor& R0, TwissP& tw, double ds)
+{
+ double kick_x=0.0, kick_y=0.0; 
+ if (tw.betx > 0.0 && ds > 0) 
+  {
+   kick_x=4.0*PI*tw.xix/tw.betx;      
+   kick_y=4.0*PI*tw.xiy/tw.bety;	
+  }
 
-void Chrom::kick(vektor& R1, vektor& R0, double ds){
-  R1[0] = R0[0];
-  R1[1] = R0[1]-chrom_x*ds*R0[5]*R0[0];
-  R1[2] = R0[2];
-  R1[3] = R0[3]-chrom_y*ds*R0[5]*R0[2];
-  R1[4] = R0[4];
-  R1[5] = R0[5];	
+ R1[0]=R0[0];
+ R1[1]=R0[1]-kick_x*R0[5]*R0[0];
+ R1[2]=R0[2];
+ R1[3]=R0[3]-kick_y*R0[5]*R0[2];
+ R1[4]=R0[4];
+ R1[5]=R0[5];	 
 }
 
 

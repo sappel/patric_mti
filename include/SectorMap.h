@@ -54,11 +54,11 @@ class SectorMap{
   void transport(vektor& R1, vektor& R0);
 
   // the following functions have been added by SP
-  double get_mux() const { return twiss.mux; }
-  double get_muy() const { return twiss.muy; }
-  double get_xix() const { return twiss.xix; }
-  double get_xiy() const { return twiss.xiy; }
-  double get_alpx() const { return twiss.alpx; }   
+  double get_mux() { return twiss.mux; }
+  double get_muy() { return twiss.muy; }
+  double get_xix() { return twiss.xix; }
+  double get_xiy() { return twiss.xiy; }
+  double get_alpx(){ return twiss.alpx; }   
 
 };
 
@@ -101,36 +101,54 @@ class BeamLine{
 
 //! Thin lens elements (linear and nonlinear)
 
-class ThinLens{
- public:	
-  virtual void kick(vektor& R1, vektor& R0, double ds) = 0;
+class ThinLens {
+  
+public:	
+  virtual void kick(vektor& R1, vektor& R0, TwissP& tw, double ds) = 0;
+  
 };	
 
+class Octupole : public ThinLens {
+    
+  double strength_h;	
+	
+public:
+  Octupole(double strength) { strength_h=strength; } 
+  void kick(vektor& R1, vektor& R0, TwissP& tw, double ds); 
 
-class Octupole: public ThinLens{
-  double strength_h;
+};
 
- public:
-  Octupole(double strength){ strength_h = strength; }
-  void kick(vektor& R1, vektor& R0, double ds);
+class Chrom : public ThinLens {
+ 
+  public: 
+   Chrom(){}  
+   void kick(vektor& R1, vektor& R0, TwissP& tw, double ds); 
+  
 };
 
 
-class Chrom: public ThinLens{
-  double chrom_x, chrom_y; 	
+/*class Chrom: public ThinLens{
+  double chromx; 	
 
  public:
-  Chrom(double tunex0, double tuney0, double R);
-  void kick(vektor& R1, vektor& R0, double ds);
+  Chrom(double chrom0) {chromx=0.0;}  
+  void kick(vektor& R1, vektor& R0, TwissP& tw, double ds);
 };
+
+/*class Chrom2{
+	
+	Chrom2(double chrom0){}
+	public:
+    void kick(vektor& R1, vektor& R0, TwissP& tw, double ds);
+			
+};*/
 
 
 class TuneShift: public ThinLens{
   double coeffx, coeffy; 	
 
  public:
-  TuneShift(double tunex0, double tuney0, double dtunex, double dtuney,
-	    double R);
+  TuneShift(double tunex0, double tuney0, double dtunex, double dtuney, double R);
   void kick(vektor& R1, vektor& R0, double ds);
 };	
 
@@ -140,8 +158,7 @@ class AmplitudeDetuning: public ThinLens{
   SectorMap SMap;
 
  public:
-  AmplitudeDetuning(double tunex0, double tuney0, double Qxs, double Qys,
-		    double R, SectorMap& M);
+  AmplitudeDetuning(double tunex0, double tuney0, double Qxs, double Qys, double R, SectorMap& M);
   void kick(vektor& R1, vektor& R0, double ds);
 };	
 
