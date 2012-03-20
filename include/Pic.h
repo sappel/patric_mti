@@ -155,7 +155,7 @@ class Pic{
   //! barrier bucket kick (reflection at zm1 and zm2)
   void barrier_kick(double zm1, double zm2);
   //! thin lens kick
-  void kick(ThinLens& M, double ds);
+  void kick(ThinLens& M, TwissP& tw, double ds);
   //! transverse impedance dipole kick
   void impedance_kick(Grid1D& kick, double circum, double ds);
   //! non/linear transverse space charge kick

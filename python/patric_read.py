@@ -6,9 +6,10 @@ from scipy.fftpack import fft, fftfreq
 import matplotlib.pyplot as plt  
 
 # input     
-run="proton_56/"     
+run="proton_60/"     
 inputdir="/d/bhs01/appel/patric/"+run
-inputdir='/d/bhs01/appel/patric/tmp/' 
+run="tmp4/"#
+inputdir='/Volumes/sappel/d/patric/'+run 
 # read idl.dat
 
 datafile=open('%sidl.dat' %(inputdir),'r')

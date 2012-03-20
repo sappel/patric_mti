@@ -1,9 +1,9 @@
 !                                    S I S 18
 TITLE, " -- SIS -- :  bend. quad. sex.  with correction to fringe "; 
-beam, particle=U, energy=0.0114, charge=28;//, mass=238;  
+beam;//, particle=U, energy=0.0114, charge=28;//, mass=238;  
 //beam, particle=U, mass=238, charge=28, gamma=1.0132;  
 Q_hor = 4.17;
-Q_vec = 3.20;
+Q_vec = 3.30;
 
 
 !---------------------  DRIFT SPACES DEFINITION  ---------------------
@@ -49,8 +49,8 @@ endmatch;
 select, flag=sectormap, clear;
 select, flag=sectormap, range=#s/#e;
 select, flag=twiss, clear;
-select, flag=twiss, column=name, keyword, s, L, dmux, dmuy;     
+select, flag=twiss, column=name, keyword, s, L, mux, muy, alfx, alfy, betx, bety, dx, dmux, dmuy;
 select, flag=error,pattern="^q.*";
-twiss, chrom, file=twiss-orig.txt;
-twiss, sectormap, sectorfile=sectormap-orig.txt;
+twiss, chrom, file=twiss_inj.txt;
+twiss, sectormap, sectorfile=sectormap_inj.txt;
 stop;

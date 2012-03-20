@@ -211,7 +211,6 @@ void Bump::BumpModi(BeamLine* bl,double amp0){
 	defl[1] =  bB4*amp0; // S03MB4
     } 
 	
-	cout<<defl[0]<< "\n";  
 	for(short i=0; i<4; ++i){
     kickers[i]->get_K(1) = defl[i];  // set deflection angle
     }

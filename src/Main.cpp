@@ -72,7 +72,7 @@ double offcenter_x = 0.0;  //!< offset with respect to ideal injection [m]
 double inj_angle = 0.0;  //!< injection angle
 unsigned max_inj = 0;  //!< maximal number of injections
 double inj_phase_x = 0.;  //!< Phase of injected beamletts in xx'-space
-double offcente_y=0.;  
+double offcenter_y=0.;  
 double inj_phase_y=0.;
 unsigned sept_return = 0;  //!< Number of revoultions till first return to septum (close to 1/Q_f)
 int bumpI;  
@@ -363,8 +363,8 @@ void print_IDL(string data_dir, int numprocs, double cell_length, int Nelements,
   fprintf(out, "%d\n", print_cell);             
   fprintf(out, "%g\n", tunex);  
   fprintf(out, "%g\n", tuney);
-  fprintf(out, "%g\n", lattice.get_element()->get_betx());
-  fprintf(out, "%g\n", lattice.get_element()->get_alpx());
+  fprintf(out, "%g\n", 0);
+  fprintf(out, "%g\n", 0);
   fprintf(out, "%g\n", offcenter_x);  
   fprintf(out, "%g\n", inj_angle);         
   fprintf(out, "%g\n", amp0);
@@ -372,7 +372,6 @@ void print_IDL(string data_dir, int numprocs, double cell_length, int Nelements,
   fprintf(out, "%g\n", delAmp);
   fprintf(out, "%g\n", cells); 
   fprintf(out, "%g\n", max_inj); 
-  
 
   fflush(out);
   fclose(out);
@@ -448,15 +447,17 @@ main(int argc, char* argv[]){
 
   BeamLine lattice;
   double tunex, tuney; 
+  SectorMap CF(CF_advance_h/NCF, CF_advance_v/NCF, CF_R, CF_length/NCF, SP.gamma0);
+  BeamLine CF_cell;
   if(madx_input_file == 1){
     // read madx sectormap and twiss files 
+	cout << "madx sectormap" << endl;
     string data_dir_in = input;
     lattice.init(data_dir_in+"/mad/", circum, tunex, tuney); 
   }
   else{
     // init constant focusing (CF) sectormap and cell:
-    SectorMap CF(CF_advance_h/NCF, CF_advance_v/NCF, CF_R, CF_length/NCF, SP.gamma0);
-    BeamLine CF_cell;
+	cout << "constsnt focusing" << endl;
     for(int j=0; j<NCF; j++)
       CF_cell.add_map(CF);
     lattice.init(CF_cell);
@@ -507,6 +508,7 @@ main(int argc, char* argv[]){
   const list<SectorMap>::iterator last_elem = --lattice.get_end_element();
 
   TwissP twiss0, twiss_TK;
+  lattice.first_element();
   twiss0 = last_elem->get_twiss();
   twiss_TK = first_elem->get_twiss();
   double Ds0 = 0.0;  // Dispersion derivative
@@ -516,6 +518,7 @@ main(int argc, char* argv[]){
     lattice.phase_advance(tunex, tuney);
     tunex = circum/cell_length*tunex/(2.0*PI);
     tuney = circum/cell_length*tuney/(2.0*PI);
+	bumpI=0;
     if(myid == 0){
       cout << "advancex: " << tunex*180.0/PI << endl;
       cout << "tunex0: " << tunex << endl;
@@ -530,9 +533,9 @@ main(int argc, char* argv[]){
   // Octupole:
   Octupole Oct0(koct);
 
-  // Amplitude detuning; works only for constant focusing; SP
-  //  AmplitudeDetuning Amp0(tunex, tuney, dqx_detune/(1.0e-6*eps_x),
-  //		 dqy_detune/(1.0e-6*eps_y), circum/(2.0*PI), CF);
+  // Amplitude detuning; works only for constant focusing; SA
+  //if(madx_input_file == 0)
+    //AmplitudeDetuning Amp0(tunex, tuney, dqx_detune/(1.0e-6*eps_x), dqy_detune/(1.0e-6*eps_y), circum/(2.0*PI), CF);
 
   //--------end lattice----------
 
@@ -647,19 +650,20 @@ main(int argc, char* argv[]){
 	   MPI_Abort(MPI_COMM_WORLD, 0);
   }
 	 
-  if(myid == 0)
-    cout << "Expected single beamlett tune shifts: dQ_x="
-	 << rp*SP.Z*current*circum / (rmsToFull*PI*clight*qe*SP.A*pow(SP.beta0*SP.gamma0, 3)*(eps_x+sqrt(eps_x*eps_y*tunex/tuney)))*1e6
-	 << ", dQ_y="
-	 << rp*SP.Z*current*circum / (rmsToFull*PI*clight*qe*SP.A*pow(SP.beta0*SP.gamma0, 3)*(eps_y+sqrt(eps_x*eps_y*tuney/tunex)))*1e6
-	 << endl;            
-  
-  
+  //if(myid == 0)
+    //cout << "Expected single beamlett tune shifts: dQ_x="
+	 //<< rp*SP.Z*current*circum / (rmsToFull*PI*clight*qe*SP.A*pow(SP.beta0*SP.gamma0, 3)*(eps_x+sqrt(eps_x*eps_y*tunex/tuney)))*1e6
+	 //<< ", dQ_y="
+	 //<< rp*SP.Z*current*circum / (rmsToFull*PI*clight*qe*SP.A*pow(SP.beta0*SP.gamma0, 3)*(eps_y+sqrt(eps_x*eps_y*tuney/tunex)))*1e6
+	 //<< endl;            
+		
+
   // print IDL parameter file idl.dat:       
   if(myid == 0){
     //cout << "Vrf [kV]: " << V0rf*1.0e-3 << "  fsyn [kHz]: " << fsyn*1.0e-3 << endl; 
     print_IDL(data_dir, numprocs, cell_length, Nelements, tunex, tuney, lattice, cells, max_inj); 
   }
+
 
   //----------------counters and other variables--------------------------
 
@@ -681,6 +685,8 @@ main(int argc, char* argv[]){
 
   int destl;  //!< ID of left neighbour slice (-1: no neighbour).
   int destr;  //!< ID of right neighbour
+
+
 
   //---finite bunch: no exchange between ends---
   if(bc_end == 0){
@@ -712,6 +718,8 @@ main(int argc, char* argv[]){
       }
   }
 
+
+
   //--------------------- end-parameters for particle exchange ---------------
 
   long *septLoss = new long;
@@ -720,7 +728,7 @@ main(int argc, char* argv[]){
   double *momenta_tot = new double[19];       
   double tmp=0;
   long size_old;	
-  offcente_y=0.0;  
+  offcenter_y=0.0;  
   inj_phase_y=0.0e-3;
   
   //--------------------------------------------------------------------------
@@ -730,11 +738,10 @@ main(int argc, char* argv[]){
    do{  // injection; SP
     if(!(counter%Nelements))
 	{  // at beginning each turn...
-      	
+	  	
 	if(inj_counter < max_inj)
 	{
  	  size_old=Pics.get_size();
-
 	  // set longitudinal distribution:
 	  switch(init_pic_z){
 	  case 0:  //  coasting + Elliptic
@@ -776,22 +783,22 @@ main(int argc, char* argv[]){
 	  case 0:  // Waterbag
 		rmsToFull = 6;
 	    Pics.waterbag_xy(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy, pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, 
-				        twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcente_y, inj_phase_y, size_old, &d);
+				        twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcenter_y, inj_phase_y, size_old, &d);
 	    break;
 	  case 1:  // KV
 		rmsToFull = 4;
 	    Pics.KV_xy(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy, pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, 
-				   twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcente_y, inj_phase_y, size_old, &d);
+				   twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcenter_y, inj_phase_y, size_old, &d);
 	    break;
 	  case 2:  // Semi-Gauss
 	    rmsToFull = 4;  // approximate
 		Pics.SG(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy, pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, 
-				twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcente_y, inj_phase_y, size_old, &d);
+				twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcenter_y, inj_phase_y, size_old, &d);
 	    break;
 	  case 3:  // Gauss
 	  	rmsToFull = 4;  // approximate
 	    Pics.Gauss_xy(1.e-6*eps_x, 1.0e-6*eps_y, twiss_TK.alpx, twiss_TK.alpy, pow(mismatch_x, 2)*twiss_TK.betx, pow(mismatch_y, 2)*twiss_TK.bety, 
-					  twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcente_y, inj_phase_y, size_old, &d);
+					  twiss_TK.Dx, Ds0, offcenter_x, inj_angle, offcenter_y, inj_phase_y, size_old, &d);
 	    break;
 	  default:
 	    printf("Invalid option for transverse particle distribution. Aborting.\n");
@@ -891,10 +898,10 @@ main(int argc, char* argv[]){
 	Ex.print();
 	Ey.print();
       }
-
+	
       // paricle coordinates to pic.dat:
       Pics.print(pic_subset);
-
+   	
       // collect densities for output only:
 
       Pics.gatherZ(charge*qe/dz, rho_z_tmp);
@@ -924,6 +931,7 @@ main(int argc, char* argv[]){
 		    NX*NY, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
       MPI_Allreduce(zx_tmp.get_grid(), zx.get_grid(),
 		    NZ*NX, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+		  
 		
       // output to density files:
 
@@ -939,9 +947,8 @@ main(int argc, char* argv[]){
 	zx.print();
       }
     } 
-    //-----------------end output--------------------------------------------
-
-
+    //-----------------end output--------------------------------------------		
+	
     // at beginning of a cell: calculate advance per (last) cell,
     // store old coordinates 
     if(lattice.get_element() == first_elem){
@@ -951,20 +958,24 @@ main(int argc, char* argv[]){
 	Pics.store_old_coordinates();
     }
 
-    // Transport particles through sectormap, update slice position s: 
-    ds = lattice.get_element()->get_L();
-    s += ds;
+	
     if(lattice.get_element()->get_name() == "\"SEPTUM\""){  // losses at septum; SP
       loss += Pics.localLoss_x(-piperadius, coll_halfgap);	  
 	}  
   
-   
+
    if(lattice.get_element()->get_name() == "\"ACCEPTANCE\""){  // losses at limiting acceptance; SA
 	  double tmp = lattice.get_element()->get_betx();
       Pics.localLoss_x(-sqrt(225e-6*tmp), sqrt(225e-6*tmp));      
 	}
 
+	// Transport particles through sectormap, update slice position s: 
+    ds = lattice.get_element()->get_L();
+
+    s += ds;
     Pics.transport(lattice.get_element()->get_map(), piperadius);
+
+
 
     //-----exchange particles between slices------------------------
 
@@ -1010,6 +1021,8 @@ main(int argc, char* argv[]){
 
     //-----end exchange of particles-------------
 
+
+
     // periodic bc without exchange
     if(numprocs == 1)
       Pics.periodic_bc(circum);	
@@ -1022,14 +1035,14 @@ main(int argc, char* argv[]){
 
     // nonlinear thin lens kick:
     if(octupole_kick == 1)
-      Pics.kick(Oct0, ds);
+      Pics.kick(Oct0, lattice.get_element()->get_twiss(), ds);
 
     //if(ampdetun_kick == 1)  // works only for constant focusing
-    //Pics.kick(Amp0, ds);
+    //Pics.kick(Amp0, lattice.get_element()->get_twiss()ds);
 
     // correct for chromaticity
-        if(chroma == 1)  
-			Pics.kick(Chrom0,ds);
+     if(chroma == 1)  
+		Pics.kick(Chrom0,lattice.get_element()->get_twiss(), ds);
 			
     // cavity kick every cell:
 
@@ -1079,6 +1092,7 @@ main(int argc, char* argv[]){
 	Pics.impedance_kick(dipole_kick_x, circum, ds);
       }
     }
+
 
     //---------------end impedance kicks-----------------------
 
