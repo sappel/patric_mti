@@ -49,6 +49,8 @@ SectorMap::SectorMap(double sigx, double sigy, double R, double length, double g
   twiss.bety = length/sigy;
   twiss.alpx = 0.0;
   twiss.alpy = 0.0;
+  twiss.mux = 0.0;
+  twiss.muy = 0.0; 
   twiss.xix=pow(sigx/length,2); // added for chromx/y kicka
   twiss.xiy=pow(sigy/length,2);
   if(R > 0.0)
@@ -118,7 +120,8 @@ void SectorMap::phase_advance(double& sigx, double& sigy){
 void BeamLine::init(string dir, double &length, double &Q_hor, double &Q_ver){
   read_madx_twiss(dir + "twiss_inj.txt", length, Q_hor, Q_ver);
   read_madx_sectormap(dir + "sectormap_inj.txt");
-  element = line.begin(); 		
+  element = line.begin(); 
+  
 }
 
 
@@ -130,6 +133,7 @@ void BeamLine::read_madx_twiss(string fname, double &circum, double &Q_hor, doub
   double s,l;
   TwissP tw; 
   double xix0=0.0, xiy0=0.0;  
+
 
   ifstream twissfile(fname.c_str());  
 
@@ -160,6 +164,7 @@ void BeamLine::read_madx_twiss(string fname, double &circum, double &Q_hor, doub
   str=charline;
   } while( str.find("$START") == -1 );
 
+
   do {
     twissfile >> SMap.get_name() >>str >> s >> SMap.get_L() >> tw.mux >> tw.muy >>  tw.alpx >> tw.alpy >> tw.betx >> tw.bety >> tw.Dx  >> tw.xix >> tw.xiy; 
     tw.mux *= 2*PI;  // tune to phase // for injection bump
@@ -171,7 +176,7 @@ void BeamLine::read_madx_twiss(string fname, double &circum, double &Q_hor, doub
     SMap.get_twiss()=tw;
     line.push_back(SMap);	      
   } while( SMap.get_name().find("$END")== -1 ); 
-
+  
   line.pop_back();
   twissfile.close();
 
@@ -354,14 +359,13 @@ void Chrom::kick(vektor& R1, vektor& R0, TwissP& tw, double ds)
 }
 
 
-TuneShift::TuneShift(double tunex0, double tuney0, double dtunex,
-		     double dtuney, double R){
+TuneShift::TuneShift(double tunex0, double tuney0, double dtunex, double dtuney, double R){
   coeffx = 2.0*tunex0*dtunex/pow(R, 2);
   coeffy = 2.0*tuney0*dtuney/pow(R, 2);
 }
 
 
-void TuneShift::kick(vektor& R1, vektor& R0, double ds){
+void TuneShift::kick(vektor& R1, vektor& R0,  TwissP& tw, double ds){
   R1[0] = R0[0];
   R1[1] = R0[1]+coeffx*ds*R0[0];
   R1[2] = R0[2];
@@ -379,7 +383,7 @@ AmplitudeDetuning::AmplitudeDetuning(double tunex0, double tuney0, double
 }
 
 
-void AmplitudeDetuning::kick(vektor& R1, vektor& R0, double ds){
+void AmplitudeDetuning::kick(vektor& R1, vektor& R0,  TwissP& tw, double ds){
   emitx = 1.0/SMap.get_betx()*(pow(R0[0], 2)+pow(SMap.get_betx()*R0[1], 2));
   emity = 1.0/SMap.get_bety()*(pow(R0[2], 2)+pow(SMap.get_bety()*R0[3], 2));
 

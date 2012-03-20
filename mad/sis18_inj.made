@@ -150,14 +150,14 @@ select, flag=error,pattern="^q.*";
 EOPTION,SEED=50;
 Ealign,dx:=tgauss(3.0)*2.0e-4,dy:=tgauss(3.0)*2.0e-4;  
 twiss, chrom, file=twiss_inj.txt;
-twiss, sectormap, sectorfile=sectormap_inj.txt;   
+twiss, sectormap, sectorfile=sectormap.txt;   
 plot, haxis=s,vaxis=x,y, vmin=-16e-3, vmax=20e-3;
 correct,mode=micado,plane=x,clist="c.tab",mlist="m.tab";
 correct,mode=micado,plane=y,clist="c.tab",mlist="m.tab"; 
  
 
-twiss, chrom, file=twiss_inj.txt;
-twiss, sectormap, sectorfile=sectormap_inj.txt;
+twiss, chrom, file=twiss.txt;
+twiss, sectormap, sectorfile=sectormap.txt;
 //twiss, table=twiss, file=sis18.twiss;
 //twiss, save;
 

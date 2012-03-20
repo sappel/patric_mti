@@ -19,14 +19,14 @@ qe = 1.6022e-19
 clight = 2.988e8
 circum = 216.72 
 
-#machines=['lxir054','lxir055','lxir056','lxir058']
+#machines=['lxir054','lxir055','lxir056','lxir058'] #56,57,58,59q
 machines=['lxir058','lxir053','lxir058','lxir045','lxir045']#,'lxir050']    #49, 53, 54, 55, 56, 58, 59, 60, 61, 66 
 machines=machines*8   
 
 
 # Flexibity
-bumpI = 1
-Bumpf = 30e-6          #single 100 10turns 160
+bumpI = 2
+Bumpf = 32e-6  #38        #single 100 10turns 160
 BumpA = 85e-3
 Chopf = 0e-6
 ChopV = 0e-6# 55e-6-50e-6  # korretur  
@@ -35,34 +35,23 @@ gamma0 = 1.0 + (e_kin*1e6*qe)/(mp*clight*clight)
 beta0  = sqrt((gamma0*gamma0-1.0)/(gamma0*gamma0)) 
 t_turn = circum/(beta0*clight)   
 
-# paret in Flexibity
-#Amp0 = 77.8e-3
-#delAmp = 2e0-3#3.0e-3
-#BumpA = Amp0+ChopV/t_turn*delAmp
-#Bumpf = BumpA*t_turn/delAmp    
-
 Amp0=BumpA-BumpA/Bumpf*ChopV
 delAmp =(BumpA/Bumpf/1e-6*t_turn)  
-
-#delAmp=0.0042
-#Bumpf=BumpA/delAmp/1e-6*t_turn
-#print Bumpf   
-
-  
         
-mtj=10
-current=56
+mtj=8
+cells=2
+current=60
 #emitanz
-ex=5. #12#3
-ey=8. #14#5
+ex=7.1#12#3
+ey=10.6 #14#5
 
 Qvec=3.30
 # Qhor
 Qhor=4.17
 path='/d/bhs01/appel/patric'  # path for output
 expath='/u/sappel/codes/patric_mti/'  # base directory of code
-#subdir = '/proton_'+str(current)+'/'   
-subdir='/tmp/'
+subdir = '/proton_'+str(current)+'/'   
+subdir='/tmp5/'
 current=current*1e-3
 # clear target directory 
 if(os.path.exists(path+subdir)):
@@ -78,7 +67,7 @@ patric_dict['NX']=128
 patric_dict['NY']=128
 patric_dict['NZ']=256
 patric_dict['NZ_bunch']=56
-patric_dict['cells']=50
+patric_dict['cells']=cells
 patric_dict['lossTol']=1.2  # tolerable relative losses; SP
 patric_dict['e_kin']=e_kin 
 patric_dict['Z']=1
@@ -112,7 +101,7 @@ patric_dict['x_septum']=0.07  # distance of septum from nominal orbit
 patric_dict['offcenter']=0.079#BumpA-BumpA/Bumpf*ChopV          70+-20mm
 patric_dict['inj_angle']=6e-3  # injection angle in rad; added by SP  6+-2mrad
 patric_dict['max']=mtj;
-patric_dict['bumpI']=bumpI;   # 0  (version SP) , 1 (flexibility)  ; SA
+patric_dict['bumpI']=bumpI;   #0 (no injection), 1  (version SP), 2(flexibility)  ; SA
 patric_dict['amp0']=Amp0#BumpA-BumpA/Bumpf*ChopV    # amplitude  bump if bumpI=1; added by SA
 patric_dict['ampp0']=0e-3  # amplitude prime bump if bumpI=1; added by SA  
 patric_dict['delAmp']=(BumpA/Bumpf*t_turn)   # ramp rate if bumpI=1; added by SA
@@ -125,7 +114,7 @@ patric_dict['Qs']=2.0
 patric_dict['leit']=1.0e5
 patric_dict['Zimage']=-7.0e7 # -3.0e7/2.0
 patric_dict['madx_input_file']=1  # 0 (no, i.e. use CF), 1 (yes)
-patric_dict['space_charge']=1  #   0 (off), 1 (self-consistent), 2 (linear), 3 (nonlinear)
+patric_dict['space_charge']=0  #   0 (off), 1 (self-consistent), 2 (linear), 3 (nonlinear)
 patric_dict['imp_kick']=0       #   0 (off), 1 (on)
 patric_dict['sliced']=0
 patric_dict['cavity']=0   # 0 (off), 1 (rf), 2 (barrier)
@@ -165,7 +154,7 @@ os.system(cmd)
 os.system("/u/sappel/.madx/madx < sis18_inj4.mad >out.madx.dat")
 shutil.copy("/u/sappel/codes/patric_mti/mad/sis18_inj4.mad", path+subdir+"/")
 shutil.copy("/u/sappel/codes/patric_mti/mad/out.madx.dat", path+subdir+"/")   
-shutil.copy("/u/sappel/codes/patric_mti/mad/madx.ps", path+subdir+"/")   	
+#shutil.copy("/u/sappel/codes/patric_mti/mad/madx.ps", path+subdir+"/")   	
 os.chdir("../python/")
  
 # create new PATRIC configuration file
