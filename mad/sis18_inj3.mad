@@ -123,8 +123,8 @@ select, flag=sectormap, range=#s/#e;
 select, flag=twiss, clear;
 select, flag=twiss, column=name, keyword, s, L, mux, muy, alfx, alfy, betx, bety, dx, dmux, dmuy;
 
-twiss, chrom, file=twiss.txt;
-twiss, sectormap, sectorfile=sectormap.txt;
+twiss, chrom, file=twiss_inj.txt;
+twiss, sectormap, sectorfile=sectormap_inj.txt;
 //twiss, table=twiss, file=sis18.twiss;
 //twiss, save;
 

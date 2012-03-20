@@ -105,6 +105,7 @@ SEC12: LINE=(DR1, RB, DR2, RB, DR3e, S12MB2, DR3f, INJ, DR3g, QS1F, DR4, QS2D, D
 // SIS18 ready for injection, beginning at injection point
 sis18: LINE=(SEC12b, SEC1, CELLA, SEC3, 2*CELLA, SEC06, 4*CELLA, SEC11, SEC12a);
 
+
 beam;
 USE, sequence=sis18;
 

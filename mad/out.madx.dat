@@ -3,7 +3,7 @@
   +              MAD-X 5.00.00              +
   +           Production Version            +
   + Code Modification Date: 28.02.2011      +
-  + Execution Time Stamp: 20.03.12 11.45.55 +
+  + Execution Time Stamp: 08.03.12 13.34.30 +
   +++++++++++++++++++++++++++++++++++++++++++
 !                                    S I S 18
 
@@ -37,19 +37,19 @@ Initial Penalty Function =   0.19166986E+01
 
 
 call:       4   Penalty function =   0.10533522E-02
-call:       7   Penalty function =   0.13090115E-08
+call:       7   Penalty function =   0.13090114E-08
  ++++++++++ LMDIF ended: converged successfully
-call:       7   Penalty function =   0.13090115E-08
+call:       7   Penalty function =   0.13090114E-08
 
 MATCH SUMMARY
 
 Node_Name                  Constraint   Type  Target Value       Final Value        Penalty
 --------------------------------------------------------------------------------------------------
-Global constraint:         q1           4     4.17000000E+00     4.17000326E+00     1.06224361E-09
-Global constraint:         q2           4     3.35000000E+00     3.35000157E+00     2.46767859E-10
+Global constraint:         q1           4     4.17000000E+00     4.17000326E+00     1.06224358E-09
+Global constraint:         q2           4     3.35000000E+00     3.35000157E+00     2.46767863E-10
 
 
-Final Penalty Function =   1.30901147e-09
+Final Penalty Function =   1.30901145e-09
 
 
 
@@ -62,7 +62,7 @@ qs2d->k1                 -4.98321e-01 -5.01000e-01 -1.00000e+20  1.00000e+20
 
 END MATCH SUMMARY
 
-VARIABLE "TAR" SET TO   1.30901147e-09
+VARIABLE "TAR" SET TO   1.30901145e-09
 enter Twiss module
 ++++++ info: Zero value of SIGT replaced by 1.
 ++++++ info: Zero value of SIGE replaced by 1/1000.
@@ -84,13 +84,13 @@ orbit:   0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00  0
        216.7239467                 -0      0.04514948592        4.706234846 
 
                 q1                dq1            betxmax              dxmax 
-       4.170003259       -4.235271144        15.11807677        2.804462966 
+       4.170003259       -4.235271142        15.29454492        2.825565125 
 
              dxrms             xcomax             xcorms                 q2 
-       2.185039685                  0                  0        3.350001571 
+        2.29646543                  0                  0        3.350001571 
 
                dq2            betymax              dymax              dyrms 
-      -5.691014782        24.79608445                  0                  0 
+      -5.691014784        28.24271461                  0                  0 
 
             ycomax             ycorms             deltap            synch_1 
                  0                  0                  0        10.08830407 
@@ -110,13 +110,13 @@ orbit:   0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00  0.000000E+00  0
        216.7239467                 -0      0.04514948592        4.706234846 
 
                 q1                dq1            betxmax              dxmax 
-       4.170003259       -3.845194861        15.11807677        2.804462966 
+       4.170003259       -3.845194861        15.29454492        2.825565125 
 
              dxrms             xcomax             xcorms                 q2 
-       2.185039685                  0                  0        3.350001571 
+        2.29646543                  0                  0        3.350001571 
 
                dq2            betymax              dymax              dyrms 
-       -6.15210652        24.79608445                  0                  0 
+       -6.15210652        28.24271461                  0                  0 
 
             ycomax             ycorms             deltap            synch_1 
                  0                  0                  0                  0 

@@ -127,12 +127,29 @@ class Chrom : public ThinLens {
 };
 
 
+/*class Chrom: public ThinLens{
+  double chromx; 	
+
+ public:
+  Chrom(double chrom0) {chromx=0.0;}  
+  void kick(vektor& R1, vektor& R0, TwissP& tw, double ds);
+};
+
+/*class Chrom2{
+	
+	Chrom2(double chrom0){}
+	public:
+    void kick(vektor& R1, vektor& R0, TwissP& tw, double ds);
+			
+};*/
+
+
 class TuneShift: public ThinLens{
   double coeffx, coeffy; 	
 
  public:
   TuneShift(double tunex0, double tuney0, double dtunex, double dtuney, double R);
-  void kick(vektor& R1, vektor& R0, TwissP& tw, double ds);
+  void kick(vektor& R1, vektor& R0, double ds);
 };	
 
 
@@ -142,6 +159,6 @@ class AmplitudeDetuning: public ThinLens{
 
  public:
   AmplitudeDetuning(double tunex0, double tuney0, double Qxs, double Qys, double R, SectorMap& M);
-  void kick(vektor& R1, vektor& R0, TwissP& tw, double ds);
+  void kick(vektor& R1, vektor& R0, double ds);
 };	
 

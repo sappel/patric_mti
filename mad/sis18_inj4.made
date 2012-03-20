@@ -41,9 +41,9 @@ FI  := 0.7;
 !fi=0.0;
 RB: SBEND, L=LL, ANGLE=ALPHA, E1=PFR, E2=PFR, HGAP=0.035, FINT=FI;
 ! ------------------- horizontal quadrupole ----------------------------
-QS1F: QUADRUPOLE, L=1.04, K1=0.296;
-QS2D: QUADRUPOLE, L=1.04, K1=-0.501;
-QS3T: QUADRUPOLE, L=0.4804, K1=0.656;
+QS1F: QUADRUPOLE, L=1.04/5., K1=0.296;
+QS2D: QUADRUPOLE, L=1.04/5., K1=-0.501;
+QS3T: QUADRUPOLE, L=0.4804/3., K1=0.656;
 //QS1F: QUADRUPOLE, L=1.0400000, K1=0.296;
 //QS2D: QUADRUPOLE, L=1.0400000, K1=-0.501;
 //QS3T: QUADRUPOLE, L=0.4804000, K1=0.656;  // always 0.656 at injection [D. Ondreka]
@@ -75,28 +75,28 @@ SEPTUM: MARKER;  // marker for septum
 
 ! ---------------------------  LINE DEFINITION --------------------------
 ! Sections without injection devices
-CELLA: LINE=(DR1, RB, DR2, RB, DR3, QS1F, DR4, QS2D, DR5, QS3T, DR6);
+CELLA: LINE=(DR1, RB, DR2, RB, DR3, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
 
 ! SIS-18 starting at injection point
 ! S12 from injection point till S01
-SEC12b: LINE=(INJ, DR3h, QS1F, DR4, QS2D, DR5, QS3T, DR6);
+SEC12b: LINE=(INJ, DR3h, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
 
 ! S01
-SEC1: LINE=(DR1, RB, DR2, RB, DR3a, S01MB3, DR3b, QS1F, DR4, QS2D, DR5, QS3T, DR6);
+SEC1: LINE=(DR1, RB, DR2, RB, DR3a, S01MB3, DR3b, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
 
 ! S03
-SEC3: LINE=(DR1, RB, DR2, RB, DR3a, S03MB4, DR3b, QS1F, DR4, QS2D, DR5, QS3T, DR6);
+SEC3: LINE=(DR1, RB, DR2, RB, DR3a, S03MB4, DR3b, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
 
 ! S06
-SEC06: LINE=(DR1, RB, DR2, RB, DR3, ACCEPTANCE, QS1F, DR4, QS2D, DR5, QS3T, DR6);
+SEC06: LINE=(DR1, RB, DR2, RB, DR3, ACCEPTANCE, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
 
 ! S11
-SEC11: LINE=(DR1, RB, DR2, RB, DR3c, S11MB1, DR3d, QS1F, DR4, QS2D, DR5, QS3T, DR6);
+SEC11: LINE=(DR1, RB, DR2, RB, DR3c, S11MB1, DR3d, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
 
 ! S12a from beginning till injection point
 SEC12a: LINE=(DR1, RB, DR2, RB, DR3e, S12MB2, DR3f, SEPTUM, DR3g, SEPTUM);
 
-SEC12: LINE=(DR1, RB, DR2, RB, DR3e, S12MB2, DR3f, INJ, DR3g, QS1F, DR4, QS2D, DR5, QS3T, DR6);
+SEC12: LINE=(DR1, RB, DR2, RB, DR3e, S12MB2, DR3f, INJ, DR3g, 5*(QS1F), DR4, 5*(QS2D), DR5, 3*(QS3T), DR6);
 
 !------------------------------------------------------------------------
 //sis18: LINE=(12*CELLA);  // SIS18 without bump
@@ -104,6 +104,7 @@ SEC12: LINE=(DR1, RB, DR2, RB, DR3e, S12MB2, DR3f, INJ, DR3g, QS1F, DR4, QS2D, D
 
 // SIS18 ready for injection, beginning at injection point
 sis18: LINE=(SEC12b, SEC1, CELLA, SEC3, 2*CELLA, SEC06, 4*CELLA, SEC11, SEC12a);
+
 
 beam;
 USE, sequence=sis18;

@@ -1,7 +1,7 @@
 pro tracklight
 
 ;data_dir ='/d/bhs01/appel/patric/proton_56/'  
-data_dir ='/d/bhs01/appel/patric/tmp5/'
+data_dir ='/d/bhs01/appel/patric/tmp/'
 outpath = '/u/sappel/tmp/	
 	
 !P.MULTI=[0,2,2]
@@ -371,7 +371,7 @@ for j=0,num_p-1, 1 do BEGIN
   if (rhozx EQ 1) then begin
     plot,pics(j,5,0:numprocs*Np-1),100.0*pics(j,0,0:numprocs*Np-1),$
          /xstyle,/ystyle,psym=2,symsize=0.1,xtitle="z [m]",ytitle="x [cm]",$
-         xrange=[-0.5*C,0.5*C],yrange=[-xmax*100,xmax*100],/nodata 	;xrange=[-1.286*4,1.286*4]			
+         xrange=[-0.5*C,0.5*C],yrange=[-xmax*100,xmax*100],/nodata 
     for i=0,numprocs-1 do begin
       oplot,pics(j,5,i*Np:(i+1)*Np-1),100.0*pics(j,0,i*Np:(i+1)*Np-1),psym=3,SYMSIZE=3.0 ;,color=(i+1)*250/numprocs
     endfor
@@ -381,7 +381,7 @@ for j=0,num_p-1, 1 do BEGIN
     picmax=max(abs(rho_zx(j,*,*)))
     picmin=picmax*1.0e-1
     contour,rho_zx(j,*,*),z,x*100.0,/xstyle,/ystyle,$
-            xtitle="z [m]", ytitle="x [cm]",yrange=[-xmax*100,xmax*100],$
+            xtitle="z [m]",ytitle="x [cm]",yrange=[-xmax*100,xmax*100],$
             xrange=[-0.5*C,0.5*C],nlevels=clevels,/fill,$
             levels=picmin+findgen(clevels+1)*(picmax-picmin)/clevels,$
             C_COLORS=25+findgen(clevels+1)*(255-25)/clevels,/overplot

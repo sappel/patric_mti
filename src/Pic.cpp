@@ -438,7 +438,7 @@ void Pic::barrier_kick(double zm1, double zm2){
 }
 
 
-void Pic::kick(ThinLens& M, TwissP& tw, double ds){
+void Pic::kick(ThinLens& M, double ds){
   vektor R0(6), R1(6);
   for(long j=0; j<pics.size(); ++j){
     if(j >= pics.size())
@@ -449,7 +449,7 @@ void Pic::kick(ThinLens& M, TwissP& tw, double ds){
     R0[3] = pics[j].ys;
     R0[4] = pics[j].z;
     R0[5] = pics[j].dp;
-    M.kick(R1, R0, tw, ds);
+    M.kick(R1, R0, ds);
     pics[j].x = R1[0];
     pics[j].xs = R1[1];
     pics[j].y = R1[2];
@@ -466,8 +466,10 @@ void Pic::impedance_kick(Grid1D& kick, double circum, double ds){
 }
 
 
-void Pic::linear_SC_kick(double dQxm, double dQym, double tunex, double tuney, Grid1D& ldy, double ldy0,
-Grid1D& dipole_current_x, Grid1D& dipole_current_y, double circum, double ds){
+void Pic::linear_SC_kick(double dQxm, double dQym, double tunex, double tuney,
+                         Grid1D& ldy, double ldy0,
+			 Grid1D& dipole_current_x, Grid1D& dipole_current_y,
+			 double circum, double ds){
   double R = circum/(2.0*PI);
   double scfact;
   double offsetx;
@@ -485,8 +487,9 @@ Grid1D& dipole_current_x, Grid1D& dipole_current_y, double circum, double ds){
 }
 
 
-void Pic::nonlinear_SC_kick(double xrms, double yrms, double dQxm, double dQym, double tunex, double tuney, 
-Grid1D& ldy, double ldy0, double circum, double ds){
+void Pic::nonlinear_SC_kick(double xrms, double yrms, double dQxm, double dQym,
+			    double tunex, double tuney, Grid1D& ldy, double ldy0,
+			    double circum, double ds){
   double R = circum/(2.0*PI);
   double scfact;
   double offsetx = offset_x();
@@ -509,7 +512,8 @@ Grid1D& ldy, double ldy0, double circum, double ds){
 
 
 void Pic::dipole_kick_simple(double dQxm, double dQym, double tunex, double tuney,
-Grid1D& ldy, double ldy0, Grid1D& dipole_current_x, Grid1D& dipole_current_y, double circum, double ds){
+			     Grid1D& ldy, double ldy0, Grid1D& dipole_current_x,
+			     Grid1D& dipole_current_y, double circum, double ds){
   double R = circum/(2.0*PI);
   double scfact;
   double offsetx;
@@ -546,8 +550,8 @@ Grid1D& ldy, double ldy0, Grid1D& dipole_current_x, Grid1D& dipole_current_y, do
 */
 
 
-double Pic::dipole_mod_kick(double t, double ds, double circum, double theta, double freq0, 
-double freq1, double tend, int n, long* d){
+double Pic::dipole_mod_kick(double t, double ds, double circum, double theta, double freq0,
+	                    double freq1, double tend, int n, long* d){
   double dtheta = 0.0, R = circum/(2.0*PI), beta0 = SP->beta0;
   double dfreq = 1.0/(tend);
   const int Nran_max = 10000;
